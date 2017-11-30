@@ -7,18 +7,24 @@ class Cube
 {
 
 public:
-
+/** Constructs the cube with a specified number of bands.*/
 	Cube(int bands);
 
+/** Renders an OpenGL Cube with spectral visualisations set by the Z Modifier.*/
 	void drawSpectrumCube(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength);
 
+/** Sets the Z Modifer for the one of the cubes audio visualisation bands*/
 	void setZModifier(int Index, float Value);
 
+/** Gets the Z Modifer for the one of the cubes audio visualisation bands*/
 	float getZModifier(int Index);
 
+/** Sets the number of bands the Cube is Rendering.*/
+	void setNumOfBands(int value);
+
+/** Gets the number of bands the Cube is Rendering.*/
 	int getNumOfBands();
 
-	void setNumOfBands(int value);
 
 private:
 

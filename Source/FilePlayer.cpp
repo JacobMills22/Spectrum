@@ -3,12 +3,12 @@
 
 FilePlayer::FilePlayer() : thread("AudioFileStreamThread")
 {
-	//AUDIO
+	//Audio Initialisation
 	thread.startThread();
 	audioFormatReaderSource = NULL;
 	resamplingAudioSource = new ResamplingAudioSource(&audioTransportSource, false);
 
-	//GUI
+	//GUI Initialisation
 	AudioFormatManager formatManager;
 	formatManager.registerBasicFormats();
 	fileChooser = new FilenameComponent("AudioFile", File::nonexistent, true, false, false,
@@ -38,8 +38,8 @@ FilePlayer::~FilePlayer()
 
 void FilePlayer::buttonClicked(Button* button)
 {
-	if (button == &GUIButtons[playButtonID])
-	{
+	if (button == &GUIButtons[playButtonID])	// If Play button was clicked,
+	{											// Start/Stop audio Playback.
 		setPlayBackState(!getPlaybackState());
 		if (getPlaybackState() == true)
 		{
@@ -57,6 +57,7 @@ void FilePlayer::buttonClicked(Button* button)
 
 void FilePlayer::resized()
 {
+	// Set bounds of components.
 	GUIButtons[playButtonID].setBounds(270, 0, 100, 30);
 	fileChooser->setBounds(0, 0, 250, 30);
 }
@@ -79,19 +80,21 @@ void FilePlayer::getNextAudioBlock(const AudioSourceChannelInfo& bufferToFill)
 }
 
 void FilePlayer::loadAudioFile(File& file)
-{
-	setPlayBackState(false);
-	audioTransportSource.setSource(0);
-	deleteAndZero(audioFormatReaderSource);
+{										// File is loading so
+	setPlayBackState(false);			// Stop audio playback
+	audioTransportSource.setSource(0);  // Remove the source from the audio transport source.
+	deleteAndZero(audioFormatReaderSource); // Remove audioformatreadersource
 
 	AudioFormatManager formatManager;
-	formatManager.registerBasicFormats();
+	formatManager.registerBasicFormats();	// Adds basic audio formats
 
-	AudioFormatReader* reader = formatManager.createReaderFor(file);
+	AudioFormatReader* reader = formatManager.createReaderFor(file); // Creates a reader for the audio file.
 
-	if (reader != 0)
+	if (reader != 0)	// If the reader has a file to read
 	{
-		audioFormatReaderSource = new AudioFormatReaderSource(reader, true);
+		audioFormatReaderSource = new AudioFormatReaderSource(reader, true);	// Create a AudioFormatReaderSource
+
+		// Set the audioTransportSource to be ready to play the audio file on the audio thread.
 		audioTransportSource.setSource(audioFormatReaderSource, getSampleRate(), &thread, reader->sampleRate);
 	}
 }
