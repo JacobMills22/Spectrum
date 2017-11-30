@@ -10,7 +10,7 @@
 #include "Visualiser.h"
 #include "FilePlayer.h"
 
-#define VisualiserBands 32
+#define VisualiserBands 64
 
 //==============================================================================
 /*
@@ -29,7 +29,7 @@ public:
 		setAudioChannels(0, 2);
 
 		addAndMakeVisible(visualiser);
-		visualiser.setSize(700, 500);
+		visualiser.setSize(800, 600);
 		addAndMakeVisible(filePlayer);
 		fifoIndex = 0;
 		nextFFTBlockReady = false;
@@ -143,7 +143,8 @@ public:
 
 		for (int BandNum = 0; BandNum < visualiserBandsTotal; BandNum++)	// For each band to be drawn.
 		{	// Logarithmically convert the number of FFTbands to the number of bands which will be drawn.
-			logarithmicBandThreshold.add(1 * pow((FFTSize) / 1, BandNum / (visualiserBandsTotal - 1.0)));
+			logarithmicBandThreshold.add(1 * pow(((FFTSize * 0.5 - (FFTSize * 0.40))) / 1, BandNum / (visualiserBandsTotal - 1.0)));
+			DBG((String)logarithmicBandThreshold.getLast());
 		}
 	}
 

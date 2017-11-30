@@ -38,22 +38,35 @@ public:
 /** Sets the Z Modifier, provided by FFT spectral data*/
 	void SetZModifier(int Index, float Value);
 
+	void rotateVisualiser(int axis);
+
 /** *Sets the size/bounds in which OpenGL will Render */
 	void setSize(int width, int height);
+
 
 private:
 
 	OpenGLContext openGLContext;
 
-	int width = 700;
+	int width = 600;
 	int height = 500;
+	
 
-	float RotationX;
-	float RotationY;
+	struct Rotation
+	{
+		float value;
+		float min;
+		float max;
+		bool invertRotation = false;
+	};
+	
+	enum {xAxis, yAxis, NumofAxis};
+	Rotation rotation[NumofAxis];
 
 	Random RandomNumGen;
 
 	Cube cube;
 
 	int numOfBands = 0;
+	int bandDecay = 10;
 };

@@ -31,5 +31,6 @@ private:
 	Random randomNumGen;
 	int numOfBands = 0;
 	Array<float> frontZModifier;
+	float ColourIncrement = 0.0;
 
 };

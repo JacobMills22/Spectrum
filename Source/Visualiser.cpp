@@ -12,9 +12,14 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands)
 		openGLContext.setContinuousRepainting(true);
 
 		// Set Rotation Position.
-		RotationX = 10.0;
-		RotationY = 100.0;
+		rotation[xAxis].value = 10.0;
+		rotation[xAxis].min = -20.0;
+		rotation[xAxis].max = 20.0;
 
+		rotation[yAxis].value = 100.0;
+		rotation[yAxis].min = 80.0;
+		rotation[yAxis].max = 120;
+		
 		// Set Number of bands for the cube to render.
 		cube.setNumOfBands(bands);
 
@@ -41,6 +46,7 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands)
 		glOrtho(0.0, width, 0, height, 0.0, 1000.0); // Set the space for the coordinate system.
 		glMatrixMode(GL_MODELVIEW); // Set Matrix mode back to standar Modelview so that transform properties such as rotation can be modified.
 		glLoadIdentity(); // Reset Matrix to Default state (Just in case any rotation or transalation takes place).
+
 	}
 	
 	void AudioVisualiser::renderOpenGL() 
@@ -54,35 +60,63 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands)
 		// Center rendering to the center of the window and rotate if needed.
 		glPushMatrix();	// Sets the current Matrix to apply transformations.
 		glTranslatef(width * 0.5, height * 0.5, -500);
-		glRotatef(RotationX, 1, 0, 0);
-		glRotatef(RotationY, 0, 1, 0);
+		glRotatef(rotation[xAxis].value, 1, 0, 0);
+		glRotatef(rotation[yAxis].value, 0, 1, 0);
 		glTranslatef(-width * 0.5, -height * 0.5, 500);
 
-		cube.drawSpectrumCube(width * 0.5, height * 0.5, -500, 300);
+		cube.drawSpectrumCube(width * 0.5, height * 0.5, -500, 300); // Draw Cube.
 		
-		glPopMatrix();
+		glPopMatrix();	// Load the transformed matrix data.
 	}
 
 	void AudioVisualiser::openGLContextClosing() 
 	{
-		DBG("OpenGL Context CLosing");
 	}
 
 	void AudioVisualiser::timerCallback()
 	{
-	//	RotationX += 5;
-	//	RotationY += 5;
+		rotateVisualiser(xAxis);
+		rotateVisualiser(yAxis);
 	}
 
 	void AudioVisualiser::SetZModifier(int Index, float Value)
 	{
-		if (Value > 1000 || Value <= 0.0)
+		if (Value > 200 || Value <= 0.0)
 		{
 			cube.setZModifier(Index, 0.0);
 		}
 		else
 		{
-			cube.setZModifier(Index, Value);
+			if (Value < cube.getZModifier(Index))
+			{
+				if (cube.getZModifier(Index) - bandDecay < Value)
+				{
+					cube.setZModifier(Index, Value);
+				}
+				else
+				{
+					cube.setZModifier(Index, cube.getZModifier(Index) - bandDecay);
+				}
+			}
+			else
+			{
+				cube.setZModifier(Index, Value);
+			}
+		}
+	}
+
+	void AudioVisualiser::rotateVisualiser(int axis)
+	{
+		if (rotation[axis].invertRotation == true)
+		{
+			rotation[axis].value -= 0.25;
+			if (rotation[axis].value <= rotation[axis].min) { rotation[axis].invertRotation = false; }
+		}
+
+		if (rotation[axis].invertRotation == false)
+		{
+			rotation[axis].value += 0.25;
+			if (rotation[axis].value >= rotation[axis].max) { rotation[axis].invertRotation = true; }
 		}
 	}
 
