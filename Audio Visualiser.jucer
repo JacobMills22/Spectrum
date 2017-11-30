@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="ZUDngP" name="Audio Visualiser" displaySplashScreen="1" reportAppUsage="1"
+              splashScreenColour="Dark" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="com.yourcompany.AudioVisualiser" includeBinaryInAppConfig="1"
+              jucerVersion="5.0.2">
+  <MAINGROUP id="YuGQBN" name="Audio Visualiser">
+    <GROUP id="{B432DAB5-929F-747E-9367-A2C412184BD2}" name="Source">
+      <GROUP id="{D63CB42B-73E4-1CF7-50E8-395DF01D34A8}" name="Visualisations">
+        <FILE id="uIV9z9" name="Cube.cpp" compile="1" resource="0" file="Source/Visualisations/Cube.cpp"/>
+        <FILE id="CBzGP7" name="Cube.h" compile="0" resource="0" file="Source/Visualisations/Cube.h"/>
+      </GROUP>
+      <FILE id="k8LZRc" name="FilePlayer.cpp" compile="1" resource="0" file="Source/FilePlayer.cpp"/>
+      <FILE id="nN0UHS" name="FilePlayer.h" compile="0" resource="0" file="Source/FilePlayer.h"/>
+      <FILE id="IswEHZ" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="zrBLe1" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="QPOYOx" name="Visualiser.cpp" compile="1" resource="0" file="Source/Visualiser.cpp"/>
+      <FILE id="PTB8Ac" name="Visualiser.h" compile="0" resource="0" file="Source/Visualiser.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2017 targetFolder="Builds/VisualStudio2017">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+                       isDebug="1" optimisation="1" targetName="Audio Visualiser"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+                       isDebug="0" optimisation="3" targetName="Audio Visualiser"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../../../Coding/JUCE 5.0/modules"/>
+      </MODULEPATHS>
+    </VS2017>
+    <VS2015 targetFolder="Builds/VisualStudio2015">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+                       isDebug="1" optimisation="1" targetName="Audio Visualiser"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+                       isDebug="0" optimisation="3" targetName="Audio Visualiser"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../Coding/JUCE 5.0/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../../../Coding/JUCE 5.0/modules"/>
+      </MODULEPATHS>
+    </VS2015>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
