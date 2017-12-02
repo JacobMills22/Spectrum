@@ -123,7 +123,7 @@ public:
 				{
 					StatAccumulator.addValue(fftData[FFTband]);	// Add the last value of the fftdata block to a Statistics Accumulator.
 					// Convert the accumulated frequency data to an average and set as a modifier for the visualiser.
-					visualiser.SetZModifier(currentScaledBand, StatAccumulator.getAverage());
+					visualiser.setSpectrumData(currentScaledBand, StatAccumulator.getAverage());
 					StatAccumulator.reset();	// Clear the old accumulated data.
 					currentScaledBand++;		// Increment the current band.
 				}

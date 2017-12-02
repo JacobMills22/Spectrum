@@ -3,6 +3,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "FilePlayer.h"
 #include "Visualisations\Cube.h"
+#include "Visualisations\SpectralFade.h"
 
 class AudioVisualiser : public Component,
 						public OpenGLRenderer,
@@ -35,8 +36,8 @@ public:
 	such as rotation.	*/
 	void timerCallback() override;
 
-/** Sets the Z Modifier, provided by FFT spectral data*/
-	void SetZModifier(int Index, float Value);
+/** Sets the SpectrumData, provided by FFT spectral data*/
+	void setSpectrumData(int Index, float Value);
 
 	void rotateVisualiser(int axis);
 
@@ -66,7 +67,10 @@ private:
 	Random RandomNumGen;
 
 	Cube cube;
+	SpectralFade spectralFade;
 
 	int numOfBands = 0;
 	int bandDecay = 10;
+
+	float zoom = 0;		// temp temp temp
 };

@@ -3,16 +3,15 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Visualisations.h"
 
-
-class Cube : public AudioVisualisation
+class SpectralFade : public AudioVisualisation
 {
 
 public:
 
-/** Constructs the cube with a specified number of bands.*/
-	Cube(int bands);
+	/** Constructs the cube with a specified number of bands.*/
+	SpectralFade(int bands);
 
-/** Renders an OpenGL Cube with spectral visualisations set by the Z Modifier.*/
+	/** Renders an OpenGL Cube with spectral visualisations set by the Z Modifier.*/
 	void renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength) override;
 
 private:
@@ -22,4 +21,6 @@ private:
 	Array<float> spectrumData;
 	float ColourIncrement = 0.0;
 
+	float ModX = 50;
+	float ModY = 50;
 };
