@@ -6,11 +6,9 @@
 
 class Cube : public AudioVisualisation
 {
+	using AudioVisualisation::AudioVisualisation;
 
 public:
-
-/** Constructs the cube with a specified number of bands.*/
-	Cube(int bands);
 
 /** Renders an OpenGL Cube with spectral visualisations set by the Z Modifier.*/
 	void renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength) override;

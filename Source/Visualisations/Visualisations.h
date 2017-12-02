@@ -6,6 +6,8 @@ class AudioVisualisation
 {
 public:
 
+	AudioVisualisation(int bands);
+
 /** OpenGL Drawing Code for a visualisation goes here */
 	virtual void renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength) = 0;
 	
