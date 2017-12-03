@@ -30,6 +30,7 @@ public:
     {
         setSize (800, 600);
 		setAudioChannels(0, 2);
+		filePlayer.setLevel(0.00);
 
 		addAndMakeVisible(visualiser);
 		visualiser.setSize(800, 600);
@@ -48,17 +49,42 @@ public:
 		visualisationPresetBox.setVisible(false);
 		visualisationPresetBox.addItem("Spectral Cube", visualiser.spectralCubeID);
 		visualisationPresetBox.addItem("Droplet", visualiser.dropletID);
+		visualisationPresetBox.setSelectedId(visualiser.spectralCubeID);
+
 
 		for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
 		{
 			addAndMakeVisible(slider[sliderID]);
-			slider[sliderID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
 			slider[sliderID].setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
 			slider[sliderID].setRange(0, 360, 1);
 			slider[sliderID].addListener(this);
 			slider[sliderID].setVisible(false);
 		}
 
+		slider[rotateXToggleID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
+		slider[rotateYToggleID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
+
+		slider[rotationSpeedSliderID].setRange(0.0, 2.0, 0.1);
+
+		slider[numOfBandsSliderID].setTextBoxStyle(Slider::TextBoxRight, true, 50, 20);
+		slider[numOfBandsSliderID].setRange(8, 128, 1);
+		slider[numOfBandsSliderID].setValue(VisualiserBands);
+
+		slider[decaySpeedSliderID].setTextBoxStyle(Slider::TextBoxRight, true, 50, 20);
+		slider[decaySpeedSliderID].setRange(0, 20, 1);
+		slider[decaySpeedSliderID].setValue(10);
+
+
+		for (int labelNum = 0; labelNum < numOfLabels; labelNum++)
+		{
+			addAndMakeVisible(labels[labelNum]);
+			labels[labelNum].setVisible(false);
+		}
+
+		labels[rotationSpeedLabelID].setText("Rotation Speed", dontSendNotification);
+		labels[numOfBandsLabelID].setText("Number of Bands", dontSendNotification);
+		labels[decaySpeedLabelID].setText("Decay Speed", dontSendNotification);
+		
 		for (int toggleButtonID = 0; toggleButtonID < numOfToggleButtons; toggleButtonID++)
 		{
 			addAndMakeVisible(rotateToggle[toggleButtonID]);
@@ -69,7 +95,7 @@ public:
 
 		rotateToggle[rotateXToggleID].setButtonText("Rotate Veritcle");
 		rotateToggle[rotateYToggleID].setButtonText("Rotate Horizontal");
-		
+
 		startTimer(30);
     }
 
@@ -101,8 +127,8 @@ public:
 				pushNextSampleIntoFifo(outputL[sample]); // Add current sample to fifo array.
 			}
 
-			outputL[sample] *= 0.01;	// Scale audio down.
-			outputR[sample] *= 0.01;	// Scale audio down.
+			outputL[sample] *= filePlayer.getLevel();	// Scale audio down.
+			outputR[sample] *= filePlayer.getLevel();	// Scale audio down.
 		}
 	}
 
@@ -141,11 +167,25 @@ public:
 		filePlayer.setBounds(visualiser.getBounds().getX(), visualiser.getBounds().getY() - 40, visualiser.getBounds().getWidth(), 30);
 		editButton.setBounds(visualiser.getBounds().getWidth(), visualiser.getBounds().getHeight() + 60, 50, 20);
 
-		visualisationPresetBox.setBounds(visualiser.getWidth() + 60, filePlayer.getBounds().getHeight() + 20, 150, 25);
-		rotateToggle[rotateXToggleID].setBounds(visualiser.getWidth() + 60, visualisationPresetBox.getBottom() + 20, getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
-		slider[rotationXSliderID].setBounds(visualiser.getWidth() + 60, rotateToggle[rotateXToggleID].getBottom(), getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
-		rotateToggle[rotateYToggleID].setBounds(visualiser.getWidth() + 60, slider[rotationXSliderID].getBottom() + 20, getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
-		slider[rotationYSliderID].setBounds(visualiser.getWidth() + 60, rotateToggle[rotateYToggleID].getBottom(), getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
+		float visualiserWidth = visualiser.getWidth();
+		float editPanelWidth = getBounds().getWidth() - visualiser.getBounds().getRight() - 10;
+
+		visualisationPresetBox.setBounds(       visualiserWidth + 60, filePlayer.getBounds().getHeight() + 20,    150,            25);
+		rotateToggle[rotateXToggleID].setBounds(visualiserWidth + 60, visualisationPresetBox.getBottom() + 20,    editPanelWidth, 30);
+		slider[rotationXSliderID].setBounds(    visualiserWidth + 60, rotateToggle[rotateXToggleID].getBottom(),  editPanelWidth, 30);
+		rotateToggle[rotateYToggleID].setBounds(visualiserWidth + 60, slider[rotationXSliderID].getBottom() + 20, editPanelWidth, 30);
+		slider[rotationYSliderID].setBounds(    visualiserWidth + 60, rotateToggle[rotateYToggleID].getBottom(),  editPanelWidth, 30);
+
+		labels[rotationSpeedLabelID].setBounds( visualiserWidth + 60, slider[rotationYSliderID].getBottom() + 20, editPanelWidth, 30);
+		slider[rotationSpeedSliderID].setBounds(visualiserWidth + 60, labels[rotationSpeedLabelID].getBottom(),   editPanelWidth, 30);
+
+		labels[numOfBandsLabelID].setBounds(visualiserWidth + 60, slider[rotationSpeedSliderID].getBottom(), editPanelWidth, 30);
+		slider[numOfBandsSliderID].setBounds(visualiserWidth + 60, labels[numOfBandsLabelID].getBottom(), editPanelWidth - 5, 30);
+
+		labels[decaySpeedLabelID].setBounds(visualiserWidth + 60, slider[numOfBandsSliderID].getBottom(), editPanelWidth, 30);
+		slider[decaySpeedSliderID].setBounds(visualiserWidth + 60, labels[decaySpeedLabelID].getBottom(), editPanelWidth - 5, 30);
+
+
     }
 
 	void buttonClicked(Button* button) override
@@ -156,19 +196,28 @@ public:
 			{
 				setEditState(false);
 				visualisationPresetBox.setVisible(false);
-				slider[rotationXSliderID].setVisible(false);
-				slider[rotationYSliderID].setVisible(false);
 				rotateToggle[rotateXToggleID].setVisible(false);
 				rotateToggle[rotateYToggleID].setVisible(false);
+
+				for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
+					slider[sliderID].setVisible(false);
+
+				for (int labelNum = 0; labelNum < numOfLabels; labelNum++)
+					labels[labelNum].setVisible(false);
+
 			}
 			else if (getEditState() == false)
 			{
 				setEditState(true);
 				visualisationPresetBox.setVisible(true);
-				slider[rotationXSliderID].setVisible(true);
-				slider[rotationYSliderID].setVisible(true);
 				rotateToggle[rotateXToggleID].setVisible(true);
 				rotateToggle[rotateYToggleID].setVisible(true);
+
+				for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
+					slider[sliderID].setVisible(true);
+
+				for (int labelNum = 0; labelNum < numOfLabels; labelNum++)
+					labels[labelNum].setVisible(true);
 			}
 			resized();
 		}
@@ -187,6 +236,11 @@ public:
 		if (comboBoxThatHasChanged == &visualisationPresetBox)
 		{
 			visualiser.setVisualisationToDraw(visualisationPresetBox.getSelectedId());	
+
+			slider[rotationXSliderID].setMaxValue(5);
+			slider[rotationXSliderID].setMinValue(5);
+			slider[rotationYSliderID].setMaxValue(100);
+			slider[rotationYSliderID].setMinValue(100);
 		}
 	}
 
@@ -197,10 +251,23 @@ public:
 			visualiser.setHorizontalRotationMin(slider[rotationXSliderID].getMinValue());
 			visualiser.setHorizontalRotationMax(slider[rotationXSliderID].getMaxValue());
 		}
-		if (sliderchanged == &slider[rotationYSliderID])
+		else if (sliderchanged == &slider[rotationYSliderID])
 		{
 			visualiser.setVerticleRotationMin(slider[rotationYSliderID].getMinValue());
 			visualiser.setVerticleRotationMax(slider[rotationYSliderID].getMaxValue());
+		}
+		else if (sliderchanged == &slider[rotationSpeedSliderID])
+		{
+			visualiser.setRotationSpeed(slider[rotationSpeedSliderID].getValue());
+		}
+		else if (sliderchanged == &slider[numOfBandsSliderID])
+		{
+			visualiser.setNumOfBandsToRender(slider[numOfBandsSliderID].getValue());
+			convertBandsToLogScale();
+		}
+		else if (sliderchanged == &slider[decaySpeedSliderID])
+		{
+			visualiser.setBandDecay(slider[decaySpeedSliderID].getValue());
 		}
 	}
 
@@ -237,9 +304,9 @@ public:
 	{
 		logarithmicBandThreshold.clear();	// Clear array.
 
-		for (int BandNum = 0; BandNum < visualiserBandsTotal; BandNum++)	// For each band to be drawn.
+		for (int BandNum = 0; BandNum < visualiser.getNumOfBandsToRender(); BandNum++)	// For each band to be drawn.
 		{	// Logarithmically convert the number of FFTbands to the number of bands which will be drawn.
-			logarithmicBandThreshold.add(1 * pow(((FFTSize * 0.5 - (FFTSize * 0.40))) / 1, BandNum / (visualiserBandsTotal - 1.0)));
+			logarithmicBandThreshold.add(1 * pow(((FFTSize * 0.5 - (FFTSize * 0.40))) / 1, BandNum / (visualiser.getNumOfBandsToRender() - 1.0)));
 			DBG((String)logarithmicBandThreshold.getLast());
 		}
 	}
@@ -268,14 +335,16 @@ private:
 
 	ComboBox visualisationPresetBox;
 
-	enum {rotationXSliderID, rotationYSliderID, numOfSliders};
+	enum {rotationXSliderID, rotationYSliderID, rotationSpeedSliderID, numOfBandsSliderID, decaySpeedSliderID, numOfSliders};
 	Slider slider[numOfSliders];
+
+	enum { rotationSpeedLabelID, numOfBandsLabelID, decaySpeedLabelID, numOfLabels};
+	Label labels[numOfLabels];
 	
 	enum{rotateXToggleID, rotateYToggleID, numOfToggleButtons};
 	ToggleButton rotateToggle[numOfToggleButtons];
 
 	FFT fastFourierTransform;
-	int visualiserBandsTotal = VisualiserBands;
 	enum { FFTOrder = 10, FFTSize = 1 << FFTOrder };
 	float fifo[FFTSize];
 	float fftData[FFTSize * 2];

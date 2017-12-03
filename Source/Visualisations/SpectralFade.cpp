@@ -8,7 +8,8 @@ void Droplet::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat cent
 	float green = 0.0;
 	for (float circles = 0; circles < getNumOfBands(); circles++)
 	{
-		yModifier += getNumOfBands() * 0.12;
+	//	yModifier += getNumOfBands() * 0.12;
+		yModifier +=  400.0 / (float)getNumOfBands();
 		green = circles / (float)getNumOfBands();
 		glBegin(GL_LINE_LOOP);
 		glColor3f(0.0, green, 1.0);

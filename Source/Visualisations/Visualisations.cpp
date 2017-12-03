@@ -17,7 +17,7 @@ AudioVisualisation::AudioVisualisation(int bands, int id)
 
 void AudioVisualisation::setSpectrumData(int index, float value, int bandDecay)
 {
-	spectrumData.set(index, value);
+//	spectrumData.set(index, value);
 
 
 	if (value > 200 || value <= 0.0)

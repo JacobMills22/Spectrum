@@ -93,13 +93,13 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands, spectralCubeID), dropl
 	{
 		if (rotation[axis].invertRotation == true)
 		{
-			rotation[axis].value -= 1.0;
+			rotation[axis].value -= getRotationSpeed();
 			if (rotation[axis].value <= rotation[axis].min) { rotation[axis].invertRotation = false; }
 		}
 
 		if (rotation[axis].invertRotation == false)
 		{
-			rotation[axis].value += 1.0;
+			rotation[axis].value += getRotationSpeed();
 			if (rotation[axis].value >= rotation[axis].max) { rotation[axis].invertRotation = true; }
 		}
 	}
@@ -158,3 +158,32 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands, spectralCubeID), dropl
 	{
 		rotationState[yAxis] = state;
 	}
+
+	void AudioVisualiser::setRotationSpeed(float value)
+	{
+		rotationSpeed = value;
+	}
+
+	float AudioVisualiser::getRotationSpeed()
+	{
+		return rotationSpeed;
+	}
+
+	void AudioVisualiser::setNumOfBandsToRender(int bands)
+	{
+		numOfBands = bands;
+		cube.setNumOfBands(bands);
+		droplet.setNumOfBands(bands);
+	}
+
+	int AudioVisualiser::getNumOfBandsToRender()
+	{
+		return numOfBands;
+	}
+
+	void AudioVisualiser::setBandDecay(int value)
+	{
+		bandDecay = value;
+	}
+
+

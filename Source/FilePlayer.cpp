@@ -25,10 +25,17 @@ FilePlayer::FilePlayer() : thread("AudioFileStreamThread")
 	GUIButtons[playButtonID].setButtonText("Play");
 	GUIButtons[stopButtonID].setButtonText("Stop");
 	
-	addAndMakeVisible(playbackPositionSlider);
-	playbackPositionSlider.setRange(0.0, 1.0, 0.01);
-	playbackPositionSlider.setTextBoxStyle(Slider::TextBoxRight, false, 50, 15);
-	playbackPositionSlider.addListener(this);
+	for (int sliderNum = 0; sliderNum < numOfSliderIDs; sliderNum++)
+	{
+		addAndMakeVisible(fileplayerSlider[sliderNum]);
+		fileplayerSlider[sliderNum].setRange(0.0, 1.0, 0.01);
+		fileplayerSlider[sliderNum].addListener(this);
+	}
+
+	fileplayerSlider[levelSliderID].setTextBoxStyle(Slider::NoTextBox, false, 0, 0);
+	fileplayerSlider[levelSliderID].setSkewFactor(1.5, false);
+
+	fileplayerSlider[playbackPositionSliderID].setTextBoxStyle(Slider::TextBoxRight, false, 50, 15);
 
 	startTimer(100);
 }
@@ -72,9 +79,9 @@ void FilePlayer::buttonClicked(Button* button)
 
 void FilePlayer::sliderValueChanged(Slider* slider)
 {
-	if (slider == &playbackPositionSlider)
+	if (slider == &fileplayerSlider[playbackPositionSliderID])
 	{
-		playBackPosition = playbackPositionSlider.getValue();
+		playBackPosition = fileplayerSlider[playbackPositionSliderID].getValue();
 
 		if (slider->isMouseButtonDown() == true)
 		{
@@ -82,13 +89,17 @@ void FilePlayer::sliderValueChanged(Slider* slider)
 			GUIButtons[playButtonID].setButtonText("Play");
 		}
 	}
+	else if (slider == &fileplayerSlider[levelSliderID])
+	{
+		setLevel(fileplayerSlider[levelSliderID].getValue());
+	}
 }
 
 void FilePlayer::timerCallback()
 {
 	if (getPlaybackState() == true)
 	{
-		playbackPositionSlider.setValue(audioTransportSource.getCurrentPosition());
+		fileplayerSlider[playbackPositionSliderID].setValue(audioTransportSource.getCurrentPosition());
 		playBackPosition = audioTransportSource.getCurrentPosition();
 	}
 }
@@ -96,10 +107,11 @@ void FilePlayer::timerCallback()
 void FilePlayer::resized()
 {
 	// Set bounds of components.
-	fileChooser->setBounds			  (0, 0, getWidth() * 0.3, 30);
+	fileChooser->setBounds			  (0, 0, getWidth() * 0.2, 30);
+	fileplayerSlider[levelSliderID].setBounds(getWidth() * 0.205, -5, getWidth() * 0.10, 45);
 	GUIButtons[playButtonID].setBounds(getWidth() * 0.31, 0, getWidth() * 0.075, 30);
 	GUIButtons[stopButtonID].setBounds(getWidth() * 0.395, 0, getWidth() * 0.075, 30);
-	playbackPositionSlider.setBounds  (getWidth() * 0.48, 0, getWidth() * 0.52, 30);
+	fileplayerSlider[playbackPositionSliderID].setBounds  (getWidth() * 0.48, 0, getWidth() * 0.52, 30);
 }
 
 // AUDIO
@@ -138,7 +150,7 @@ void FilePlayer::loadAudioFile(File& file)
 		audioTransportSource.setSource(audioFormatReaderSource, getSampleRate(), &thread, reader->sampleRate);
 	}
 
-	playbackPositionSlider.setRange(0.0, audioTransportSource.getLengthInSeconds(), 0.01);
+	fileplayerSlider[playbackPositionSliderID].setRange(0.0, audioTransportSource.getLengthInSeconds(), 0.01);
 }
 
 void FilePlayer::filenameComponentChanged(FilenameComponent* fileComponentThatHasChanged)
@@ -182,4 +194,15 @@ void FilePlayer::setSampleRate(int sampleRate)
 int FilePlayer::getSampleRate()
 {
 	return SampleRate;
+}
+
+
+void FilePlayer::setLevel(float level)
+{
+	playbackLevel = level;
+}
+
+float FilePlayer::getLevel()
+{
+	return playbackLevel;
 }

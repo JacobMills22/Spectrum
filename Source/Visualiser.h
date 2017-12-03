@@ -62,8 +62,17 @@ public:
 
 	void setRotatingYState(bool state);
 
-	
+	void setRotationSpeed(float value);
 
+	float getRotationSpeed();
+
+	void setNumOfBandsToRender(int bands);
+
+	int getNumOfBandsToRender();
+
+	void setBandDecay(int value);
+
+	
 	enum { spectralCubeID = 1, dropletID };
 
 private:
@@ -91,6 +100,7 @@ private:
 	Cube cube;
 	Droplet droplet;
 
-	int numOfBands = 0;
+	int numOfBands = 8;
 	int bandDecay = 10;
+	float rotationSpeed = 1.0;
 };

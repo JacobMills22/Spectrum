@@ -62,6 +62,10 @@ public:
 /** Gets the Sample Rate. */
 	int getSampleRate();
 
+	void setLevel(float level);
+
+	float getLevel();
+
 private:
 
 	// AUDIO VARIABLES/OBJECTS
@@ -72,10 +76,12 @@ private:
 	float playBackPosition = 0.0;
 	bool playbackState = false;
 	int SampleRate = 44100;
+	float playbackLevel = 0.0;
 
 	// GUI VARIABLES/OBJECTS
 	enum { playButtonID, stopButtonID, numOfButtons };
 	TextButton GUIButtons[numOfButtons];
-	Slider playbackPositionSlider;
+	enum { playbackPositionSliderID, levelSliderID, numOfSliderIDs};
+	Slider fileplayerSlider[numOfSliderIDs];
 	ScopedPointer<FilenameComponent> fileChooser;
 };
