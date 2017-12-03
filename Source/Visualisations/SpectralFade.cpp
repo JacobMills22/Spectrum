@@ -2,7 +2,7 @@
 #include "SpectralFade.h"
 #include <math.h>
 
-void SpectralFade::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength)
+void Droplet::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength)
 {
 	float yModifier = 0.0;
 	float green = 0.0;

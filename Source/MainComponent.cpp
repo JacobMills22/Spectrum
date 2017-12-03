@@ -18,7 +18,10 @@
     your controls and content.
 */
 class MainContentComponent   : public AudioAppComponent,
-		                       public Timer
+		                       public Timer,
+							   public Button::Listener,
+							   public ComboBox::Listener,
+	                           public Slider::Listener
 {
 public:
     //==============================================================================
@@ -36,6 +39,37 @@ public:
 
 		convertBandsToLogScale();
 
+		addAndMakeVisible(editButton);
+		editButton.setButtonText("Edit");
+		editButton.addListener(this);
+
+		addAndMakeVisible(visualisationPresetBox);
+		visualisationPresetBox.addListener(this);
+		visualisationPresetBox.setVisible(false);
+		visualisationPresetBox.addItem("Spectral Cube", visualiser.spectralCubeID);
+		visualisationPresetBox.addItem("Droplet", visualiser.dropletID);
+
+		for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
+		{
+			addAndMakeVisible(slider[sliderID]);
+			slider[sliderID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
+			slider[sliderID].setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+			slider[sliderID].setRange(0, 360, 1);
+			slider[sliderID].addListener(this);
+			slider[sliderID].setVisible(false);
+		}
+
+		for (int toggleButtonID = 0; toggleButtonID < numOfToggleButtons; toggleButtonID++)
+		{
+			addAndMakeVisible(rotateToggle[toggleButtonID]);
+			rotateToggle[toggleButtonID].addListener(this);
+			rotateToggle[toggleButtonID].setToggleState(false, dontSendNotification);
+			rotateToggle[toggleButtonID].setVisible(false);
+		}
+
+		rotateToggle[rotateXToggleID].setButtonText("Rotate Veritcle");
+		rotateToggle[rotateYToggleID].setButtonText("Rotate Horizontal");
+		
 		startTimer(30);
     }
 
@@ -55,10 +89,7 @@ public:
 	{
 		bufferToFill.clearActiveBufferRegion();		// Clear noise from buffer.
 
-		if (filePlayer.getPlaybackState() == true)	// If the Fileplayer is playing audio.
-		{
-			filePlayer.getNextAudioBlock(bufferToFill);	// Fill buffer with the next audio block from filePlayer.
-		}
+		filePlayer.getNextAudioBlock(bufferToFill);	// Fill buffer with the next audio block from filePlayer.
 
 		float *outputL = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample); // Writeable Left Channel Output Array.
 		float *outputR = bufferToFill.buffer->getWritePointer(1, bufferToFill.startSample); // Writeable Right Channel Output Array.
@@ -105,9 +136,74 @@ public:
 
     void resized() override
     {
-		visualiser.setBounds(getBounds().reduced(50));
-		filePlayer.setBounds(10, 10, 400, 30);
+		if (getEditState() == true) { visualiser.setBounds(getBounds().reduced(50).removeFromLeft(getBounds().reduced(50).getWidth() * 0.80)); }
+		else { visualiser.setBounds(getBounds().reduced(50)); }
+		filePlayer.setBounds(visualiser.getBounds().getX(), visualiser.getBounds().getY() - 40, visualiser.getBounds().getWidth(), 30);
+		editButton.setBounds(visualiser.getBounds().getWidth(), visualiser.getBounds().getHeight() + 60, 50, 20);
+
+		visualisationPresetBox.setBounds(visualiser.getWidth() + 60, filePlayer.getBounds().getHeight() + 20, 150, 25);
+		rotateToggle[rotateXToggleID].setBounds(visualiser.getWidth() + 60, visualisationPresetBox.getBottom() + 20, getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
+		slider[rotationXSliderID].setBounds(visualiser.getWidth() + 60, rotateToggle[rotateXToggleID].getBottom(), getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
+		rotateToggle[rotateYToggleID].setBounds(visualiser.getWidth() + 60, slider[rotationXSliderID].getBottom() + 20, getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
+		slider[rotationYSliderID].setBounds(visualiser.getWidth() + 60, rotateToggle[rotateYToggleID].getBottom(), getBounds().getWidth() - visualiser.getBounds().getRight() - 10, 30);
     }
+
+	void buttonClicked(Button* button) override
+	{
+		if (button == &editButton)
+		{
+			if (getEditState() == true)
+			{
+				setEditState(false);
+				visualisationPresetBox.setVisible(false);
+				slider[rotationXSliderID].setVisible(false);
+				slider[rotationYSliderID].setVisible(false);
+				rotateToggle[rotateXToggleID].setVisible(false);
+				rotateToggle[rotateYToggleID].setVisible(false);
+			}
+			else if (getEditState() == false)
+			{
+				setEditState(true);
+				visualisationPresetBox.setVisible(true);
+				slider[rotationXSliderID].setVisible(true);
+				slider[rotationYSliderID].setVisible(true);
+				rotateToggle[rotateXToggleID].setVisible(true);
+				rotateToggle[rotateYToggleID].setVisible(true);
+			}
+			resized();
+		}
+		else if (button == &rotateToggle[rotateXToggleID])
+		{
+			visualiser.setRotatingXState(rotateToggle[rotateXToggleID].getToggleState());
+		}
+		else if (button == &rotateToggle[rotateYToggleID])
+		{
+			visualiser.setRotatingYState(rotateToggle[rotateYToggleID].getToggleState());
+		}
+	}
+
+	void comboBoxChanged(ComboBox* comboBoxThatHasChanged) override
+	{
+		if (comboBoxThatHasChanged == &visualisationPresetBox)
+		{
+			visualiser.setVisualisationToDraw(visualisationPresetBox.getSelectedId());	
+		}
+	}
+
+	void sliderValueChanged(Slider* sliderchanged) override
+	{
+		if (sliderchanged == &slider[rotationXSliderID])
+		{
+			visualiser.setHorizontalRotationMin(slider[rotationXSliderID].getMinValue());
+			visualiser.setHorizontalRotationMax(slider[rotationXSliderID].getMaxValue());
+		}
+		if (sliderchanged == &slider[rotationYSliderID])
+		{
+			visualiser.setVerticleRotationMin(slider[rotationYSliderID].getMinValue());
+			visualiser.setVerticleRotationMax(slider[rotationYSliderID].getMaxValue());
+		}
+	}
+
 
 	void timerCallback() override
 	{
@@ -148,28 +244,48 @@ public:
 		}
 	}
 
+
+	//==============================================================================
+
+	void setEditState(bool state)
+	{
+		editState = state;
+	}
+
+	bool getEditState()
+	{
+		return editState;
+	}
+
 private:
     //==============================================================================
 
 	AudioVisualiser visualiser;
 	FilePlayer filePlayer;
 
+	TextButton editButton;
+	bool editState = false;
+
+	ComboBox visualisationPresetBox;
+
+	enum {rotationXSliderID, rotationYSliderID, numOfSliders};
+	Slider slider[numOfSliders];
+	
+	enum{rotateXToggleID, rotateYToggleID, numOfToggleButtons};
+	ToggleButton rotateToggle[numOfToggleButtons];
+
 	FFT fastFourierTransform;
-
 	int visualiserBandsTotal = VisualiserBands;
-
 	enum { FFTOrder = 10, FFTSize = 1 << FFTOrder };
 	float fifo[FFTSize];
 	float fftData[FFTSize * 2];
 	int fifoIndex;
 	bool nextFFTBlockReady;
-
 	Array<int> logarithmicBandThreshold;
 	StatisticsAccumulator<float> StatAccumulator;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };
-
 
 // (This function is called by the app startup code to create our main component)
 Component* createMainContentComponent()     { return new MainContentComponent(); }

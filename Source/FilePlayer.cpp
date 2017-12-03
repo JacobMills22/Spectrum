@@ -23,10 +23,19 @@ FilePlayer::FilePlayer() : thread("AudioFileStreamThread")
 		GUIButtons[ButtonID].addListener(this);
 	}
 	GUIButtons[playButtonID].setButtonText("Play");
+	GUIButtons[stopButtonID].setButtonText("Stop");
+	
+	addAndMakeVisible(playbackPositionSlider);
+	playbackPositionSlider.setRange(0.0, 1.0, 0.01);
+	playbackPositionSlider.setTextBoxStyle(Slider::TextBoxRight, false, 50, 15);
+	playbackPositionSlider.addListener(this);
+
+	startTimer(100);
 }
 
 FilePlayer::~FilePlayer()
 {
+	stopTimer();
 	audioTransportSource.setSource(0);
 	deleteAndZero(audioFormatReaderSource);
 	thread.stopThread(100);
@@ -39,27 +48,58 @@ FilePlayer::~FilePlayer()
 void FilePlayer::buttonClicked(Button* button)
 {
 	if (button == &GUIButtons[playButtonID])	// If Play button was clicked,
-	{											// Start/Stop audio Playback.
-		setPlayBackState(!getPlaybackState());
-		if (getPlaybackState() == true)
+	{											// Start/Pause audio Playback.
+		if (getPlaybackState() == false)
 		{
-			audioTransportSource.start();
-			GUIButtons[playButtonID].setButtonText("Stop");
+			audioTransportSource.setPosition(playBackPosition);
+			setPlayBackState(true);
+			GUIButtons[playButtonID].setButtonText("Pause");
 		}
 		else
 		{
-			audioTransportSource.stop();
-			audioTransportSource.setPosition(0);
+			setPlayBackState(false);
 			GUIButtons[playButtonID].setButtonText("Play");
 		}
+	}
+	else if (button == &GUIButtons[stopButtonID])	// If Stop button was clicked,
+	{
+		setPlayBackState(false);
+		playBackPosition = 0;
+		audioTransportSource.setPosition(playBackPosition);
+		GUIButtons[playButtonID].setButtonText("Play");
+	}
+}
+
+void FilePlayer::sliderValueChanged(Slider* slider)
+{
+	if (slider == &playbackPositionSlider)
+	{
+		playBackPosition = playbackPositionSlider.getValue();
+
+		if (slider->isMouseButtonDown() == true)
+		{
+			setPlayBackState(false);
+			GUIButtons[playButtonID].setButtonText("Play");
+		}
+	}
+}
+
+void FilePlayer::timerCallback()
+{
+	if (getPlaybackState() == true)
+	{
+		playbackPositionSlider.setValue(audioTransportSource.getCurrentPosition());
+		playBackPosition = audioTransportSource.getCurrentPosition();
 	}
 }
 
 void FilePlayer::resized()
 {
 	// Set bounds of components.
-	GUIButtons[playButtonID].setBounds(270, 0, 100, 30);
-	fileChooser->setBounds(0, 0, 250, 30);
+	fileChooser->setBounds			  (0, 0, getWidth() * 0.3, 30);
+	GUIButtons[playButtonID].setBounds(getWidth() * 0.31, 0, getWidth() * 0.075, 30);
+	GUIButtons[stopButtonID].setBounds(getWidth() * 0.395, 0, getWidth() * 0.075, 30);
+	playbackPositionSlider.setBounds  (getWidth() * 0.48, 0, getWidth() * 0.52, 30);
 }
 
 // AUDIO
@@ -97,6 +137,8 @@ void FilePlayer::loadAudioFile(File& file)
 		// Set the audioTransportSource to be ready to play the audio file on the audio thread.
 		audioTransportSource.setSource(audioFormatReaderSource, getSampleRate(), &thread, reader->sampleRate);
 	}
+
+	playbackPositionSlider.setRange(0.0, audioTransportSource.getLengthInSeconds(), 0.01);
 }
 
 void FilePlayer::filenameComponentChanged(FilenameComponent* fileComponentThatHasChanged)
@@ -119,7 +161,6 @@ void FilePlayer::setPlayBackState(bool state)
 {
 	if (state == true)
 	{
-		audioTransportSource.setPosition(0);
 		audioTransportSource.start();
 	}
 	else

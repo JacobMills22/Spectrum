@@ -4,7 +4,7 @@
 #include "Visualiser.h"
 
 
-AudioVisualiser::AudioVisualiser(int bands) : cube(bands), spectralFade(bands)
+AudioVisualiser::AudioVisualiser(int bands) : cube(bands, spectralCubeID), droplet(bands, dropletID)
 	{
 		// OpenGL Initialisation.
 		openGLContext.setRenderer(this);
@@ -13,16 +13,16 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands), spectralFade(bands)
 
 		// Set Rotation Position.
 		rotation[xAxis].value = 0.0;
-		rotation[xAxis].min = -20.0;
-		rotation[xAxis].max = 50.0;
+		rotation[xAxis].min = 0.0;
+		rotation[xAxis].max = 0.0;
 
 		rotation[yAxis].value = 0.0;
-		rotation[yAxis].min = 80.0;
-		rotation[yAxis].max = 120;
+		rotation[yAxis].min = 0.0;
+		rotation[yAxis].max = 0.0;
 		
 		// Set Number of bands for the cube to render.
 		cube.setNumOfBands(bands);
-		spectralFade.setNumOfBands(bands);
+		droplet.setNumOfBands(bands);
 
 		// Start timer at a rate of 50ms.
 		startTimer(50);
@@ -67,13 +67,10 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands), spectralFade(bands)
 		glRotatef(0, 0, 0, 1);
 		glTranslatef(-width * 0.5, -height * 0.5, 500);
 
-//		cube.renderVisualisation(width * 0.5, height * 0.5, -500, 300); // Draw Cube.
-		spectralFade.renderVisualisation(width * 0.5, height * 0.5, -500, 300); // Draw Cube.
+		if (cube.getDrawingState() == true) { cube.renderVisualisation(width * 0.5, height * 0.5, -500, 300); } // Draw Cube.
+		else if (droplet.getDrawingState() == true) {droplet.renderVisualisation(width * 0.5, height * 0.5, -500, 300); } // Draw Cube.
 		
 		glPopMatrix();	// Load the transformed matrix data.
-
-	//	zoom = 1.2;
-	//	if (zoom >= 1.4) { zoom = 0.0; }
 	}
 
 	void AudioVisualiser::openGLContextClosing() 
@@ -82,52 +79,27 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands), spectralFade(bands)
 
 	void AudioVisualiser::timerCallback()
 	{
-		rotateVisualiser(xAxis);
-		//rotateVisualiser(yAxis);
+		if (rotationState[xAxis] == true) { rotateVisualiser(xAxis); }
+		if (rotationState[yAxis] == true) { rotateVisualiser(yAxis); }
 	}
 
-	void AudioVisualiser::setSpectrumData(int Index, float Value)
+	void AudioVisualiser::setSpectrumData(int index, float value)
 	{
-		if (Value > 200 || Value <= 0.0)
-		{
-			cube.setSpectrumData(Index, 0.0);
-			spectralFade.setSpectrumData(Index, 0.0);
-		}
-		else
-		{
-			if (Value < cube.getSpectrumData(Index))
-			{
-				if (cube.getSpectrumData(Index) - bandDecay < Value)
-				{
-					cube.setSpectrumData(Index, Value);
-					spectralFade.setSpectrumData(Index, Value);
-				}
-				else
-				{
-					cube.setSpectrumData(Index, cube.getSpectrumData(Index) - bandDecay);
-					spectralFade.setSpectrumData(Index, Value);
-				}
-			}
-			else
-			{
-				cube.setSpectrumData(Index, Value);
-				spectralFade.setSpectrumData(Index, Value);
-
-			}
-		}
+		cube.setSpectrumData(index, value, bandDecay);
+		droplet.setSpectrumData(index, value, bandDecay);
 	}
 
 	void AudioVisualiser::rotateVisualiser(int axis)
 	{
 		if (rotation[axis].invertRotation == true)
 		{
-			rotation[axis].value -= 0.25;
+			rotation[axis].value -= 1.0;
 			if (rotation[axis].value <= rotation[axis].min) { rotation[axis].invertRotation = false; }
 		}
 
 		if (rotation[axis].invertRotation == false)
 		{
-			rotation[axis].value += 0.25;
+			rotation[axis].value += 1.0;
 			if (rotation[axis].value >= rotation[axis].max) { rotation[axis].invertRotation = true; }
 		}
 	}
@@ -138,5 +110,51 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands), spectralFade(bands)
 		height = Height;
 	}
 
+	void AudioVisualiser::setVisualisationToDraw(int index)
+	{
+		cube.setDrawingState(false);
+		droplet.setDrawingState(false);
 
+		if (index == spectralCubeID)
+		{
+			cube.setDrawingState(true);
+		}
+		else if (index == dropletID)
+		{
+			droplet.setDrawingState(true);
+		}
+	}
 
+	void AudioVisualiser::setHorizontalRotationMin(float value)
+	{
+		rotation[xAxis].min = value;
+		rotation[xAxis].value = value;
+	}
+
+	void AudioVisualiser::setHorizontalRotationMax(float value)
+	{
+		rotation[xAxis].max = value;
+		rotation[xAxis].value = value;
+	}
+
+	void AudioVisualiser::setVerticleRotationMin(float value)
+	{
+		rotation[yAxis].min = value;
+		rotation[yAxis].value = value;
+	}
+
+	void AudioVisualiser::setVerticleRotationMax(float value)
+	{
+		rotation[yAxis].max = value;
+		rotation[yAxis].value = value;
+	}
+
+	void AudioVisualiser::setRotatingXState(bool state)
+	{
+		rotationState[xAxis] = state;
+	}
+
+	void AudioVisualiser::setRotatingYState(bool state)
+	{
+		rotationState[yAxis] = state;
+	}

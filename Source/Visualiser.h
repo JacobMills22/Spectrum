@@ -37,13 +37,34 @@ public:
 	void timerCallback() override;
 
 /** Sets the SpectrumData, provided by FFT spectral data*/
-	void setSpectrumData(int Index, float Value);
+	void setSpectrumData(int index, float value);
 
+/** Rotates The visualiser on a specified axis*/
 	void rotateVisualiser(int axis);
 
 /** *Sets the size/bounds in which OpenGL will Render */
 	void setSize(int width, int height);
 
+/** Sets which visualisation should be drawn */
+	void setVisualisationToDraw(int index);
+
+	/** Parameter Getters & Setters*/
+
+	void setHorizontalRotationMin(float value);
+
+	void setHorizontalRotationMax(float value);
+
+	void setVerticleRotationMin(float value);
+
+	void setVerticleRotationMax(float value);
+
+	void setRotatingXState(bool state);
+
+	void setRotatingYState(bool state);
+
+	
+
+	enum { spectralCubeID = 1, dropletID };
 
 private:
 
@@ -63,14 +84,13 @@ private:
 	
 	enum {xAxis, yAxis, NumofAxis};
 	Rotation rotation[NumofAxis];
+	bool rotationState[NumofAxis];
 
 	Random RandomNumGen;
 
 	Cube cube;
-	SpectralFade spectralFade;
+	Droplet droplet;
 
 	int numOfBands = 0;
 	int bandDecay = 10;
-
-	float zoom = 0;		// temp temp temp
 };

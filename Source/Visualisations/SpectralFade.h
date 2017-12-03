@@ -3,7 +3,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Visualisations.h"
 
-class SpectralFade : public AudioVisualisation
+class Droplet : public AudioVisualisation
 {
 	using AudioVisualisation::AudioVisualisation;
 
