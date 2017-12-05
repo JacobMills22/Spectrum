@@ -5,39 +5,33 @@ AudioVisualisation::AudioVisualisation(int bands, int id)
 {
 	setNumOfBands(bands);	// Set the number of audio bands for the cube to render.
 	spectrumData.resize(bands); // resizes the Z Modifier Array to the number of bands.
-	setID(id);
 
 	for (int band = 0; band < bands; band++)
 	{
 		setSpectrumData(band, 0.0, 0);	// Initialises all bands to 0.
 	}
-
-	ColourIncrement = 0.9 / bands;
 }
 
 void AudioVisualisation::setSpectrumData(int index, float value, int bandDecay)
 {
-//	spectrumData.set(index, value);
-
-
-	if (value > 200 || value <= 0.0)
+	if (value > 200 || value <= 0.0)	// Removes noise values.
 	{
 		spectrumData.set(index, 0.0);
 	}
 	else
 	{
-		if (value < getSpectrumData(index))
+		if (value < getSpectrumData(index)) // If new FFT Value is less than the old
 		{
-			if (getSpectrumData(index) - bandDecay < value)
+			if (value > getSpectrumData(index) - bandDecay ) // if new FFT value is greater than the old - the decay amount
 			{
-				spectrumData.set(index, value);
+				spectrumData.set(index, value); // Set the spectrum data to the new value
 			}
-			else
-			{
-				spectrumData.set(index, getSpectrumData(index) - bandDecay);
+			else // Otherwise set the spectrum value to the old value minuse - the decay
+			{	
+				spectrumData.set(index, getSpectrumData(index) - bandDecay); 
 			}
 		}
-		else
+		else // Set spectrum data to the new value if the new FFT Value is greater than the old
 		{
 			spectrumData.set(index, value);
 		}
@@ -70,12 +64,25 @@ bool AudioVisualisation::getDrawingState()
 	return drawState;
 }
 
-void AudioVisualisation::setID(int id)
+
+void AudioVisualisation::setRenderColour(int index, float red, float green, float blue)
 {
-	visualisationID = id;
+	VisualisationColour[index].red = red;
+	VisualisationColour[index].green = green;
+	VisualisationColour[index].blue = blue;
 }
 
-int AudioVisualisation::getID()
+float AudioVisualisation::getRed(int index)
 {
-	return visualisationID;
+	return VisualisationColour[index].red;
+}
+
+float AudioVisualisation::getGreen(int index)
+{
+	return VisualisationColour[index].green;
+}
+
+float AudioVisualisation::getBlue(int index)
+{
+	return VisualisationColour[index].blue;
 }

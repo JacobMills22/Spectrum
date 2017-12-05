@@ -6,6 +6,8 @@ class AudioVisualisation
 {
 public:
 
+/** Class contains all nesseaary functions to render an OpenGL Visualisation.
+	SpectrumData will need to be set periodically by FFT data.	*/
 	AudioVisualisation(int bands, int id);
 
 /** OpenGL Drawing Code for a visualisation goes here */
@@ -23,24 +25,35 @@ public:
 /** Gets the number of bands to draw*/
 	int getNumOfBands();
 
+/** Sets whether or not a visualisation should be drawn*/
 	void setDrawingState(bool state);
 
+/** Gets whether or not a visualisation should be drawn*/
 	bool getDrawingState();
 
-	void setID(int id);
+/** Sets the colour of a specific element of a visualisation (specified by index) */
+	void setRenderColour(int index, float red, float green, float blue);
 
-	int getID();
-
-
+/** Gets the current RGB colour data*/
+	float getRed(int index);
+	float getGreen(int index);
+	float getBlue(int index);
+	
 private:
 	
-	Random randomNumGen;
 	int numOfBands = 0;
 	Array<float> spectrumData;
-	float ColourIncrement = 0.0;
-	String visualisationName;
 	bool drawState = false;
 	int visualisationID;
+
+	struct ColoursRGB
+	{
+		float red = 0.0;
+		float green = 0.0;
+		float blue = 0.0;
+	};
+
+	ColoursRGB VisualisationColour[2];
 };
 
 

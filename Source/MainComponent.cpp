@@ -21,29 +21,32 @@ class MainContentComponent   : public AudioAppComponent,
 		                       public Timer,
 							   public Button::Listener,
 							   public ComboBox::Listener,
-	                           public Slider::Listener
+	                           public Slider::Listener,
+		                       public ChangeListener
 {
 public:
     //==============================================================================
     MainContentComponent() : fastFourierTransform(FFTOrder, false),
 							 visualiser(VisualiserBands)
     {
-        setSize (800, 600);
+        setSize (1100, 700);
 		setAudioChannels(0, 2);
 		filePlayer.setLevel(0.00);
 
+		// Visualiser initialisation
 		addAndMakeVisible(visualiser);
 		visualiser.setSize(800, 600);
 		addAndMakeVisible(filePlayer);
 		fifoIndex = 0;
 		nextFFTBlockReady = false;
-
 		convertBandsToLogScale();
 
+		// Edit Button initialisation
 		addAndMakeVisible(editButton);
 		editButton.setButtonText("Edit");
 		editButton.addListener(this);
 
+		// Preset ComboBox initialisation
 		addAndMakeVisible(visualisationPresetBox);
 		visualisationPresetBox.addListener(this);
 		visualisationPresetBox.setVisible(false);
@@ -51,7 +54,7 @@ public:
 		visualisationPresetBox.addItem("Droplet", visualiser.dropletID);
 		visualisationPresetBox.setSelectedId(visualiser.spectralCubeID);
 
-
+		// Slider initialisation
 		for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
 		{
 			addAndMakeVisible(slider[sliderID]);
@@ -74,7 +77,7 @@ public:
 		slider[decaySpeedSliderID].setRange(0, 20, 1);
 		slider[decaySpeedSliderID].setValue(10);
 
-
+		// Label initialisation
 		for (int labelNum = 0; labelNum < numOfLabels; labelNum++)
 		{
 			addAndMakeVisible(labels[labelNum]);
@@ -85,6 +88,7 @@ public:
 		labels[numOfBandsLabelID].setText("Number of Bands", dontSendNotification);
 		labels[decaySpeedLabelID].setText("Decay Speed", dontSendNotification);
 		
+		// Toggle buttons initialisation
 		for (int toggleButtonID = 0; toggleButtonID < numOfToggleButtons; toggleButtonID++)
 		{
 			addAndMakeVisible(rotateToggle[toggleButtonID]);
@@ -96,6 +100,18 @@ public:
 		rotateToggle[rotateXToggleID].setButtonText("Rotate Veritcle");
 		rotateToggle[rotateYToggleID].setButtonText("Rotate Horizontal");
 
+		// Colour selector initialisation
+		addAndMakeVisible(visualisationColourSelector[0]);
+		visualisationColourSelector[0].addChangeListener(this);
+		visualisationColourSelector[0].setVisible(false);
+		visualiser.setRenderColour(0, 0.0, 0.5, 1.0);
+
+		addAndMakeVisible(visualisationColourSelector[1]);
+		visualisationColourSelector[1].addChangeListener(this);
+		visualisationColourSelector[1].setVisible(false);
+		visualiser.setRenderColour(1, 0.0, 0.05, 0.05);
+
+		// Start timer
 		startTimer(30);
     }
 
@@ -162,7 +178,7 @@ public:
 
     void resized() override
     {
-		if (getEditState() == true) { visualiser.setBounds(getBounds().reduced(50).removeFromLeft(getBounds().reduced(50).getWidth() * 0.80)); }
+		if (getEditState() == true) { visualiser.setBounds(getBounds().reduced(50).removeFromLeft(getBounds().reduced(50).getWidth() * 0.75)); }
 		else { visualiser.setBounds(getBounds().reduced(50)); }
 		filePlayer.setBounds(visualiser.getBounds().getX(), visualiser.getBounds().getY() - 40, visualiser.getBounds().getWidth(), 30);
 		editButton.setBounds(visualiser.getBounds().getWidth(), visualiser.getBounds().getHeight() + 60, 50, 20);
@@ -185,19 +201,23 @@ public:
 		labels[decaySpeedLabelID].setBounds(visualiserWidth + 60, slider[numOfBandsSliderID].getBottom(), editPanelWidth, 30);
 		slider[decaySpeedSliderID].setBounds(visualiserWidth + 60, labels[decaySpeedLabelID].getBottom(), editPanelWidth - 5, 30);
 
+		visualisationColourSelector[0].setBounds(visualiserWidth + 60, slider[decaySpeedSliderID].getBottom() + 50, editPanelWidth * 0.5 - 10, 200);
+		visualisationColourSelector[1].setBounds(visualiserWidth + visualisationColourSelector[0].getWidth() + 70, slider[decaySpeedSliderID].getBottom() + 50, editPanelWidth * 0.5 - 10, 200);
 
     }
 
 	void buttonClicked(Button* button) override
 	{
-		if (button == &editButton)
+		if (button == &editButton)		// If edit button was pressed.
 		{
-			if (getEditState() == true)
-			{
+			if (getEditState() == true)	// If edit state was true make it false and
+			{							// make all edit parameters invisible.
 				setEditState(false);
 				visualisationPresetBox.setVisible(false);
 				rotateToggle[rotateXToggleID].setVisible(false);
 				rotateToggle[rotateYToggleID].setVisible(false);
+				visualisationColourSelector[0].setVisible(false);
+				visualisationColourSelector[1].setVisible(false);
 
 				for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
 					slider[sliderID].setVisible(false);
@@ -206,12 +226,14 @@ public:
 					labels[labelNum].setVisible(false);
 
 			}
-			else if (getEditState() == false)
-			{
+			else if (getEditState() == false) // If edit state was false make it true and
+			{								  // make all edit parameters visible.
 				setEditState(true);
 				visualisationPresetBox.setVisible(true);
 				rotateToggle[rotateXToggleID].setVisible(true);
 				rotateToggle[rotateYToggleID].setVisible(true);
+				visualisationColourSelector[0].setVisible(true);
+				visualisationColourSelector[1].setVisible(true);
 
 				for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
 					slider[sliderID].setVisible(true);
@@ -219,24 +241,27 @@ public:
 				for (int labelNum = 0; labelNum < numOfLabels; labelNum++)
 					labels[labelNum].setVisible(true);
 			}
+
 			resized();
 		}
-		else if (button == &rotateToggle[rotateXToggleID])
-		{
+		else if (button == &rotateToggle[rotateXToggleID]) // If Rotate X button was pressed set the
+		{												   // rotating state to the new state of the button
 			visualiser.setRotatingXState(rotateToggle[rotateXToggleID].getToggleState());
 		}
-		else if (button == &rotateToggle[rotateYToggleID])
-		{
+		else if (button == &rotateToggle[rotateYToggleID]) // If Rotate Y button was pressed set the
+		{												   // rotating state to the new state of the button
 			visualiser.setRotatingYState(rotateToggle[rotateYToggleID].getToggleState());
 		}
 	}
 
 	void comboBoxChanged(ComboBox* comboBoxThatHasChanged) override
 	{
-		if (comboBoxThatHasChanged == &visualisationPresetBox)
-		{
+		if (comboBoxThatHasChanged == &visualisationPresetBox) // If the selected preset was changed
+		{	
+			// Set the visualisation to draw to the selected ID
 			visualiser.setVisualisationToDraw(visualisationPresetBox.getSelectedId());	
-
+			
+			// Reset the rotation values to a standard default.
 			slider[rotationXSliderID].setMaxValue(5);
 			slider[rotationXSliderID].setMinValue(5);
 			slider[rotationYSliderID].setMaxValue(100);
@@ -246,6 +271,7 @@ public:
 
 	void sliderValueChanged(Slider* sliderchanged) override
 	{
+		// Set relevent paramters to the corresponding sliders current value.
 		if (sliderchanged == &slider[rotationXSliderID])
 		{
 			visualiser.setHorizontalRotationMin(slider[rotationXSliderID].getMinValue());
@@ -268,6 +294,23 @@ public:
 		else if (sliderchanged == &slider[decaySpeedSliderID])
 		{
 			visualiser.setBandDecay(slider[decaySpeedSliderID].getValue());
+		}
+	}
+
+	void changeListenerCallback(ChangeBroadcaster* source) override
+	{
+		// Set the colour of a specified element of the render.
+		if (source == &visualisationColourSelector[0]) 
+		{
+			visualiser.setRenderColour(0, visualisationColourSelector[0].getCurrentColour().getFloatRed(),
+										  visualisationColourSelector[0].getCurrentColour().getFloatGreen(),
+										  visualisationColourSelector[0].getCurrentColour().getFloatBlue());
+		}
+		else if (source == &visualisationColourSelector[1])
+		{
+			visualiser.setRenderColour(1, visualisationColourSelector[1].getCurrentColour().getFloatRed(),
+										  visualisationColourSelector[1].getCurrentColour().getFloatGreen(),
+										  visualisationColourSelector[1].getCurrentColour().getFloatBlue());
 		}
 	}
 
@@ -343,6 +386,8 @@ private:
 	
 	enum{rotateXToggleID, rotateYToggleID, numOfToggleButtons};
 	ToggleButton rotateToggle[numOfToggleButtons];
+
+	ColourSelector visualisationColourSelector[2];
 
 	FFT fastFourierTransform;
 	enum { FFTOrder = 10, FFTSize = 1 << FFTOrder };

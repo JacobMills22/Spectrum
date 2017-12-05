@@ -13,33 +13,33 @@ void Cube::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ
 	GLfloat cubeBack = centerZ - halfSideLength * 0.6;
 
 	// Top
-	glBegin(GL_QUADS);							  // Begin drawing quads.
-	glColor3f(0.0f, 0.2f, 0.4f);				  // Set colour (RGB)
-	glVertex3f(cubeLeft, cubeTop, cubeFront);	  // front left
-	glVertex3f(cubeLeft, cubeTop, cubeBack);	  // back left
-	glVertex3f(cubeRight, cubeTop, cubeBack);	  // back Right
-	glVertex3f(cubeRight, cubeTop, cubeFront);	  // front Right
+	glBegin(GL_QUADS);															  // Begin drawing quads.
+	glColor3f(getRed(1) + 0.3, getGreen(1) + 0.3, getBlue(1) + 0.3);			  // Set colour (RGB)
+	glVertex3f(cubeLeft, cubeTop, cubeFront);									  // front left
+	glVertex3f(cubeLeft, cubeTop, cubeBack);									  // back left
+	glVertex3f(cubeRight, cubeTop, cubeBack);									  // back Right
+	glVertex3f(cubeRight, cubeTop, cubeFront);									  // front Right
 
-												  // Bottom
-	glColor3f(0.0f, 0.2f, 0.1f);				  // Set colour (RGB)
-	glVertex3f(cubeLeft, cubeBottom, cubeFront);  // front left
-	glVertex3f(cubeLeft, cubeBottom, cubeBack);   // back left
-	glVertex3f(cubeRight, cubeBottom, cubeBack);  // back Right
-	glVertex3f(cubeRight, cubeBottom, cubeFront); // front Right
+	// Bottom
+	glColor3f(getRed(1) + 0.1, getGreen(1) + 0.1, getBlue(1) + 0.1);			  // Set colour (RGB)
+	glVertex3f(cubeLeft, cubeBottom, cubeFront);								  // front left
+	glVertex3f(cubeLeft, cubeBottom, cubeBack);									  // back left
+	glVertex3f(cubeRight, cubeBottom, cubeBack);								  // back Right
+	glVertex3f(cubeRight, cubeBottom, cubeFront);								  // front Right
 
-												  // Left
-	glColor3f(0.0f, 0.2f, 0.2f);                  // Set colour (RGB)
-	glVertex3f(cubeLeft, cubeTop, cubeFront);     // front left
-	glVertex3f(cubeLeft, cubeTop, cubeBack);	  // back left
-	glVertex3f(cubeLeft, cubeBottom, cubeBack);	  // back Right
-	glVertex3f(cubeLeft, cubeBottom, cubeFront);  // front Right
+	// Left
+	glColor3f(getRed(1) + 0.2, getGreen(1) + 0.2, getBlue(1) + 0.2);              // Set colour (RGB)
+	glVertex3f(cubeLeft, cubeTop, cubeFront);									  // front left
+	glVertex3f(cubeLeft, cubeTop, cubeBack);									  // back left
+	glVertex3f(cubeLeft, cubeBottom, cubeBack);									  // back Right
+	glVertex3f(cubeLeft, cubeBottom, cubeFront);								  // front Right
 
-												  // Right
-	glColor3f(0.0f, 0.2f, 0.3f);                  // Set colour (RGB)
-	glVertex3f(cubeRight, cubeTop, cubeFront);    // front left
-	glVertex3f(cubeRight, cubeTop, cubeBack);     // back left
-	glVertex3f(cubeRight, cubeBottom, cubeBack);  // back Right
-	glVertex3f(cubeRight, cubeBottom, cubeFront); // front Right
+	// Right
+	glColor3f(getRed(1) + 0.2, getGreen(1) + 0.2, getBlue(1) + 0.2);              // Set colour (RGB)
+	glVertex3f(cubeRight, cubeTop, cubeFront);									  // front left
+	glVertex3f(cubeRight, cubeTop, cubeBack);									  // back left
+	glVertex3f(cubeRight, cubeBottom, cubeBack);								  // back Right
+	glVertex3f(cubeRight, cubeBottom, cubeFront);								  // front Right
 	glEnd();
 
 	// Remaining two side of the cube are the spectral visualisations which are made up of seperate
@@ -48,7 +48,6 @@ void Cube::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ
 	float quadHeight = edgeLength * (0.5 / getNumOfBands()); // Sets the height of all bands scaled by the number of bands.
 	float bandIncrement = 0.0;	// Each time a band is drawn an increment is applied, so the next band is drawn at a higher position. 
 
-	float blue = ColourIncrement;
 
 	// Front
 	for (int band = 0; band < getNumOfBands(); band++)	// For each band to render
@@ -57,11 +56,11 @@ void Cube::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ
 		glColor3f(0.0f, 0.0f, 0.0f);
 		glVertex3f(cubeLeft, cubeBottom + bandIncrement, cubeFront); // Bottom Verticies of 1st quad
 		glVertex3f(cubeRight, cubeBottom + bandIncrement, cubeFront); // (not Modulated by audio, act as anchors)
-		glColor3f(0.0f, blue, 1.0f);
+		glColor3f(getRed(0), getGreen(0), getBlue(0));
 		glVertex3f(cubeRight, cubeBottom + bandIncrement + quadHeight, cubeFront + getSpectrumData(band)); // Top Verticies of 1st quad
 		glVertex3f(cubeLeft, cubeBottom + bandIncrement + quadHeight, cubeFront + getSpectrumData(band));	// (Modulated by audio)
 
-		glColor3f(0.0f, blue, 1.0f);
+		glColor3f(getRed(0), getGreen(0), getBlue(0));
 		glVertex3f(cubeRight, cubeBottom + bandIncrement + quadHeight, cubeFront + getSpectrumData(band)); // Bottom Verticies of 2nd quad
 		glVertex3f(cubeLeft, cubeBottom + bandIncrement + quadHeight, cubeFront + getSpectrumData(band));  // (Modulated by audio)
 		glColor3f(0.0f, 0.0f, 0.0f);
@@ -70,10 +69,9 @@ void Cube::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ
 		glEnd();														  // Stop Drawing Quads
 
 		bandIncrement += quadHeight * 2; // Two Quads were drawn so the next set need to be drawn higher.
-		blue += ColourIncrement;
 	}
 	bandIncrement = 0.0;	// Reset Increment so that the quads on the other side of the cube can be drawn.
-	blue = 0;
+
 
 	// Back
 	for (int Point = 0; Point < getNumOfBands(); Point++) // For each band to render
@@ -82,11 +80,11 @@ void Cube::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ
 		glColor3f(0.0f, 0.0f, 0.0f);
 		glVertex3f(cubeLeft + 1, cubeBottom + bandIncrement, cubeBack); // Bottom Verticies of 1st quad
 		glVertex3f(cubeRight - 1, cubeBottom + bandIncrement, cubeBack); // (not Modulated by audio, act as anchors)
-		glColor3f(0.0f, blue, 1.0f);
+		glColor3f(getRed(0), getGreen(0), getBlue(0));
 		glVertex3f(cubeRight - 1, cubeBottom + bandIncrement + quadHeight, cubeBack - getSpectrumData(Point)); // Top Verticies of 1st
 		glVertex3f(cubeLeft + 1, cubeBottom + bandIncrement + quadHeight, cubeBack - getSpectrumData(Point));	// (Modulated by audio)
 
-		glColor3f(0.0f, blue, 1.0f);
+		glColor3f(getRed(0), getGreen(0), getBlue(0));
 		glVertex3f(cubeRight - 1, cubeBottom + bandIncrement + quadHeight, cubeBack - getSpectrumData(Point));	// Top Verticies of 1st
 		glVertex3f(cubeLeft + 1, cubeBottom + bandIncrement + quadHeight, cubeBack - getSpectrumData(Point));	// (Modulated by audio)
 		glColor3f(0.f, 0.0f, 0.0f);
@@ -95,7 +93,6 @@ void Cube::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ
 		glEnd();															 // Stop Drawing Wireframe Quads (Lines)
 
 		bandIncrement += quadHeight * 2; // Two Quads were drawn so the next set need to be drawn higher.
-		blue += ColourIncrement;
 	}
 }
 

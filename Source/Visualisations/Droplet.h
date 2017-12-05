@@ -3,7 +3,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Visualisations.h"
 
-class Cube : public AudioVisualisation
+class Droplet : public AudioVisualisation
 {
 	using AudioVisualisation::AudioVisualisation; // Construct with the AudioVisualisations constructor
 
@@ -16,6 +16,6 @@ private:
 
 	int numOfBands = 0;
 	Array<float> spectrumData;
-	float ColourIncrement = 0.0;
-
+	float ModX = 50;
+	float ModY = 50;
 };

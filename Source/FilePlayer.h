@@ -62,8 +62,10 @@ public:
 /** Gets the Sample Rate. */
 	int getSampleRate();
 
+/** Set the playback level modifier */
 	void setLevel(float level);
 
+/** Get the playback level modifier */
 	float getLevel();
 
 private:
