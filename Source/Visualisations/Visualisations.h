@@ -2,6 +2,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+
 /**Contains essential and handy functions for all visualisations.
 All visualisations will need to inherit this class to be able to recieve 
 spectrum data and respond to any parameter changes.

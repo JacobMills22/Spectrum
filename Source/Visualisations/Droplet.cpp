@@ -2,6 +2,8 @@
 #include "Droplet.h"
 #include <math.h>
 
+#include <OpenGL/gl.h>
+
 void Droplet::renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength)
 {
 	float yModifier = 0.0; // Increments the Y position of each Circle.

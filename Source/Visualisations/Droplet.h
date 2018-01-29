@@ -3,6 +3,9 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Visualisations.h"
 
+#include <OpenGL/gl.h>
+
+
 /** OpenGL Drawing code for the Droplet visualisation.
 Inherits from AudioVisualisation. 
 @see AudioVisualisation

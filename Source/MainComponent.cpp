@@ -1,103 +1,97 @@
-/*
-  ==============================================================================
-
-    This file was auto-generated!
-
-  ==============================================================================
-*/
 
 #include "MainComponent.h"
 
-	MainContentComponent::MainContentComponent() : fastFourierTransform(FFTOrder, false),
-							 visualiser(VisualiserBands)
+// Older versions of FFT need to be constructed with "fastFourierTransform(FFTOrder, false)".
+MainContentComponent::MainContentComponent() : fastFourierTransform(FFTOrder),
+visualiser(VisualiserBands)
+{
+    setSize (1100, 700);
+    setAudioChannels(0, 2);
+    filePlayer.setLevel(0.00);
+    
+    // Visualiser initialisation
+    addAndMakeVisible(visualiser);
+    visualiser.setSize(800, 600);
+    addAndMakeVisible(filePlayer);
+    fifoIndex = 0;
+    nextFFTBlockReady = false;
+    convertBandsToLogScale();
+    
+    // Edit Button initialisation
+    addAndMakeVisible(editButton);
+    editButton.setButtonText("Edit");
+    editButton.addListener(this);
+    
+    // Preset ComboBox initialisation
+    addAndMakeVisible(visualisationPresetBox);
+    visualisationPresetBox.addListener(this);
+    visualisationPresetBox.setVisible(false);
+    visualisationPresetBox.addItem("Spectral Cube", visualiser.spectralCubeID);
+    visualisationPresetBox.addItem("Droplet", visualiser.dropletID);
+    visualisationPresetBox.setSelectedId(visualiser.spectralCubeID);
+    
+    // Slider initialisation
+    for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
     {
-        setSize (1100, 700);
-		setAudioChannels(0, 2);
-		filePlayer.setLevel(0.00);
-
-		// Visualiser initialisation
-		addAndMakeVisible(visualiser);
-		visualiser.setSize(800, 600);
-		addAndMakeVisible(filePlayer);
-		fifoIndex = 0;
-		nextFFTBlockReady = false;
-		convertBandsToLogScale();
-
-		// Edit Button initialisation
-		addAndMakeVisible(editButton);
-		editButton.setButtonText("Edit");
-		editButton.addListener(this);
-
-		// Preset ComboBox initialisation
-		addAndMakeVisible(visualisationPresetBox);
-		visualisationPresetBox.addListener(this);
-		visualisationPresetBox.setVisible(false);
-		visualisationPresetBox.addItem("Spectral Cube", visualiser.spectralCubeID);
-		visualisationPresetBox.addItem("Droplet", visualiser.dropletID);
-		visualisationPresetBox.setSelectedId(visualiser.spectralCubeID);
-
-		// Slider initialisation
-		for (int sliderID = 0; sliderID < numOfSliders; sliderID++)
-		{
-			addAndMakeVisible(slider[sliderID]);
-			slider[sliderID].setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
-			slider[sliderID].setRange(0, 360, 1);
-			slider[sliderID].addListener(this);
-			slider[sliderID].setVisible(false);
-		}
-
-		slider[rotateXToggleID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
-		slider[rotateYToggleID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
-
-		slider[rotationSpeedSliderID].setRange(0.0, 2.0, 0.1);
-		slider[rotationSpeedSliderID].setValue(1.0);
-
-		slider[numOfBandsSliderID].setTextBoxStyle(Slider::TextBoxRight, true, 50, 20);
-		slider[numOfBandsSliderID].setRange(8, 128, 1);
-		slider[numOfBandsSliderID].setValue(VisualiserBands);
-
-		slider[decaySpeedSliderID].setTextBoxStyle(Slider::TextBoxRight, true, 50, 20);
-		slider[decaySpeedSliderID].setRange(0, 20, 1);
-		slider[decaySpeedSliderID].setValue(10);
-
-		// Label initialisation
-		for (int labelNum = 0; labelNum < numOfLabels; labelNum++)
-		{
-			addAndMakeVisible(labels[labelNum]);
-			labels[labelNum].setVisible(false);
-		}
-
-		labels[rotationSpeedLabelID].setText("Rotation Speed", dontSendNotification);
-		labels[numOfBandsLabelID].setText("Number of Bands", dontSendNotification);
-		labels[decaySpeedLabelID].setText("Decay Speed", dontSendNotification);
-		
-		// Toggle buttons initialisation
-		for (int toggleButtonID = 0; toggleButtonID < numOfToggleButtons; toggleButtonID++)
-		{
-			addAndMakeVisible(rotateToggle[toggleButtonID]);
-			rotateToggle[toggleButtonID].addListener(this);
-			rotateToggle[toggleButtonID].setToggleState(false, dontSendNotification);
-			rotateToggle[toggleButtonID].setVisible(false);
-		}
-
-		rotateToggle[rotateXToggleID].setButtonText("Rotate Veritcle");
-		rotateToggle[rotateYToggleID].setButtonText("Rotate Horizontal");
-		rotateToggle[rotateAutoToggleID].setButtonText("Auto Rotate");
-
-		// Colour selector initialisation
-		addAndMakeVisible(visualisationColourSelector[0]);
-		visualisationColourSelector[0].addChangeListener(this);
-		visualisationColourSelector[0].setVisible(false);
-		visualiser.setRenderColour(0, 0.0, 0.5, 1.0);
-
-		addAndMakeVisible(visualisationColourSelector[1]);
-		visualisationColourSelector[1].addChangeListener(this);
-		visualisationColourSelector[1].setVisible(false);
-		visualiser.setRenderColour(1, 0.0, 0.05, 0.05);
-
-		// Start timer
-		startTimer(30);
+        addAndMakeVisible(slider[sliderID]);
+        slider[sliderID].setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+        slider[sliderID].setRange(0, 360, 1);
+        slider[sliderID].addListener(this);
+        slider[sliderID].setVisible(false);
     }
+    
+    slider[rotateXToggleID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
+    slider[rotateYToggleID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
+    
+    slider[rotationSpeedSliderID].setRange(0.0, 2.0, 0.1);
+    slider[rotationSpeedSliderID].setValue(1.0);
+    
+    slider[numOfBandsSliderID].setTextBoxStyle(Slider::TextBoxRight, true, 50, 20);
+    slider[numOfBandsSliderID].setRange(8, 128, 1);
+    slider[numOfBandsSliderID].setValue(VisualiserBands);
+    
+    slider[decaySpeedSliderID].setTextBoxStyle(Slider::TextBoxRight, true, 50, 20);
+    slider[decaySpeedSliderID].setRange(0, 20, 1);
+    slider[decaySpeedSliderID].setValue(10);
+    
+    // Label initialisation
+    for (int labelNum = 0; labelNum < numOfLabels; labelNum++)
+    {
+        addAndMakeVisible(labels[labelNum]);
+        labels[labelNum].setVisible(false);
+    }
+    
+    labels[rotationSpeedLabelID].setText("Rotation Speed", dontSendNotification);
+    labels[numOfBandsLabelID].setText("Number of Bands", dontSendNotification);
+    labels[decaySpeedLabelID].setText("Decay Speed", dontSendNotification);
+    
+    // Toggle buttons initialisation
+    for (int toggleButtonID = 0; toggleButtonID < numOfToggleButtons; toggleButtonID++)
+    {
+        addAndMakeVisible(rotateToggle[toggleButtonID]);
+        rotateToggle[toggleButtonID].addListener(this);
+        rotateToggle[toggleButtonID].setToggleState(false, dontSendNotification);
+        rotateToggle[toggleButtonID].setVisible(false);
+    }
+    
+    rotateToggle[rotateXToggleID].setButtonText("Rotate Veritcle");
+    rotateToggle[rotateYToggleID].setButtonText("Rotate Horizontal");
+    rotateToggle[rotateAutoToggleID].setButtonText("Auto Rotate");
+    
+    // Colour selector initialisation
+    addAndMakeVisible(visualisationColourSelector[0]);
+    visualisationColourSelector[0].addChangeListener(this);
+    visualisationColourSelector[0].setVisible(false);
+    visualiser.setRenderColour(0, 0.0, 0.5, 1.0);
+    
+    addAndMakeVisible(visualisationColourSelector[1]);
+    visualisationColourSelector[1].addChangeListener(this);
+    visualisationColourSelector[1].setVisible(false);
+    visualiser.setRenderColour(1, 0.0, 0.05, 0.05);
+    
+    // Start timer
+    startTimer(30);
+}
 
 	MainContentComponent::~MainContentComponent()
     {
@@ -414,3 +408,5 @@
 		return editState;
 	}
 
+// (This function is called by the app startup code to create our main component)
+Component* createMainContentComponent() { return new MainContentComponent(); }

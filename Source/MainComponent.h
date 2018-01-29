@@ -34,7 +34,7 @@ public:
 
 	/** Destructor, stops timer and shuts down audio. */
 	~MainContentComponent();
-
+    
 	//==============================================================================
 
 	/** Prepares the file player for playback*/
@@ -110,7 +110,9 @@ private:
 
 	ColourSelector visualisationColourSelector[2];
 
-	FFT fastFourierTransform;
+    //FFT fastFourierTransform; // Some setups require the "dsp::".
+    dsp::FFT fastFourierTransform; // If you encounter an error here try adding/removing the "dsp::"
+    
 	enum { FFTOrder = 10, FFTSize = 1 << FFTOrder };
 	float fifo[FFTSize];
 	float fftData[FFTSize * 2];
@@ -125,5 +127,4 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainContentComponent)
 };
 
-// (This function is called by the app startup code to create our main component)
-Component* createMainContentComponent() { return new MainContentComponent(); }
+

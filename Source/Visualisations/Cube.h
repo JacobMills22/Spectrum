@@ -3,6 +3,9 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Visualisations.h"
 
+#include <OpenGL/gl.h>
+
+
 /** OpenGL Drawing code for the Cube visualisation.
 Inherits from AudioVisualisation.
 @see AudioVisualisation

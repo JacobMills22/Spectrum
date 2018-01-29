@@ -2,8 +2,15 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "FilePlayer.h"
-#include "Visualisations\Cube.h"
-#include "Visualisations\Droplet.h"
+
+
+//Windows
+//#include "Visualisations\Cube.h"
+//#include "Visualisations\Droplet.h"
+
+// Mac
+#include "Visualisations/Cube.h"
+#include "Visualisations/Droplet.h"
 
 
 /** Handles the OpenGL rendering of the project.
