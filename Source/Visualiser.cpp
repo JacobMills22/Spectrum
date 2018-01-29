@@ -35,10 +35,6 @@ AudioVisualiser::AudioVisualiser(int bands) : cube(bands, spectralCubeID), dropl
 		stopTimer();
 	}
 
-	void AudioVisualiser::paint(Graphics& g) 
-	{
-	}
-
 	void AudioVisualiser::newOpenGLContextCreated() 
 	{
 		glViewport(0.0f, 0.0f, width, height); // Set the Position, Width and Height of the Window for OpenGL to render in.

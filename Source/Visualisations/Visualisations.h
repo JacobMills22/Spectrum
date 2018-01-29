@@ -2,6 +2,13 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+/**Contains essential and handy functions for all visualisations.
+All visualisations will need to inherit this class to be able to recieve 
+spectrum data and respond to any parameter changes.
+In order to draw a new visualisation the renderVisualisation function
+needs to be overidden, and drawing code should be implemented there.
+*/
+
 class AudioVisualisation
 {
 public:
@@ -13,11 +20,15 @@ public:
 /** OpenGL Drawing Code for a visualisation goes here */
 	virtual void renderVisualisation(GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat edgeLength) = 0;
 	
-/** Sets the SpectrumData for a specifc band, provided by FFT spectral data*/
+/** Sets the SpectrumData for a specifc band, provided by FFT spectral data.
+	@param index: the band number to be set.
+	@param value: the data to set. 
+	@param bandDecay: The value of the bandDecay slider or bandDecay amount to be used.*/
 	void setSpectrumData(int index, float value, int bandDecay);
 
-/** Gets the SpectrumData of a specifc band, provided by FFT spectral data*/
-	float getSpectrumData(int Index);
+/** Gets the SpectrumData of a specifc band, provided by FFT spectral data.
+	@param index: the band number to be set. */
+	float getSpectrumData(int index);
 
 /** Sets the number of bands to draw*/
 	void setNumOfBands(int value);
@@ -31,7 +42,8 @@ public:
 /** Gets whether or not a visualisation should be drawn*/
 	bool getDrawingState();
 
-/** Sets the colour of a specific element of a visualisation (specified by index) */
+/** Sets the colour of a specific element of a visualisation (specified by index).
+	@param index: Which visualisation element will change colour (0/1)  */
 	void setRenderColour(int index, float red, float green, float blue);
 
 /** Gets the current RGB colour data*/

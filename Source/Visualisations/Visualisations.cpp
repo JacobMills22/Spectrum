@@ -39,9 +39,9 @@ void AudioVisualisation::setSpectrumData(int index, float value, int bandDecay)
 
 }
 
-float AudioVisualisation::getSpectrumData(int Index)
+float AudioVisualisation::getSpectrumData(int index)
 {
-	return spectrumData[Index];
+	return spectrumData[index];
 }
 
 int AudioVisualisation::getNumOfBands()

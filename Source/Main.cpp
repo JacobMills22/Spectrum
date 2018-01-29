@@ -13,6 +13,7 @@
 Component* createMainContentComponent();
 
 //==============================================================================
+/** JUCE Application class. */
 class AudioVisualiserApplication  : public JUCEApplication
 {
 public:

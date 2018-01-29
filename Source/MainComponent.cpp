@@ -6,27 +6,9 @@
   ==============================================================================
 */
 
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "Visualiser.h"
-#include "FilePlayer.h"
+#include "MainComponent.h"
 
-#define VisualiserBands 64
-
-//==============================================================================
-/*
-    This component lives inside our window, and this is where you should put all
-    your controls and content.
-*/
-class MainContentComponent   : public AudioAppComponent,
-		                       public Timer,
-							   public Button::Listener,
-							   public ComboBox::Listener,
-	                           public Slider::Listener,
-		                       public ChangeListener
-{
-public:
-    //==============================================================================
-    MainContentComponent() : fastFourierTransform(FFTOrder, false),
+	MainContentComponent::MainContentComponent() : fastFourierTransform(FFTOrder, false),
 							 visualiser(VisualiserBands)
     {
         setSize (1100, 700);
@@ -68,6 +50,7 @@ public:
 		slider[rotateYToggleID].setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
 
 		slider[rotationSpeedSliderID].setRange(0.0, 2.0, 0.1);
+		slider[rotationSpeedSliderID].setValue(1.0);
 
 		slider[numOfBandsSliderID].setTextBoxStyle(Slider::TextBoxRight, true, 50, 20);
 		slider[numOfBandsSliderID].setRange(8, 128, 1);
@@ -99,6 +82,7 @@ public:
 
 		rotateToggle[rotateXToggleID].setButtonText("Rotate Veritcle");
 		rotateToggle[rotateYToggleID].setButtonText("Rotate Horizontal");
+		rotateToggle[rotateAutoToggleID].setButtonText("Auto Rotate");
 
 		// Colour selector initialisation
 		addAndMakeVisible(visualisationColourSelector[0]);
@@ -115,19 +99,19 @@ public:
 		startTimer(30);
     }
 
-    ~MainContentComponent()
+	MainContentComponent::~MainContentComponent()
     {
 		shutdownAudio();
 		stopTimer();
     }
 
     //==============================================================================
-    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
+    void MainContentComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate) 
     {
 		filePlayer.prepareToPlay(samplesPerBlockExpected, sampleRate); // Tell the filePlayer the samplerate and how many samples to expect.
     }
 
-    void getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill) override
+    void MainContentComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFill) 
 	{
 		bufferToFill.clearActiveBufferRegion();		// Clear noise from buffer.
 
@@ -143,19 +127,24 @@ public:
 				pushNextSampleIntoFifo(outputL[sample]); // Add current sample to fifo array.
 			}
 
+			if (rotateToggle[rotateAutoToggleID].getToggleState() == true)
+			{
+				calculateAudioIntensity(outputL[sample] + outputR[sample]);
+			}
+
 			outputL[sample] *= filePlayer.getLevel();	// Scale audio down.
 			outputR[sample] *= filePlayer.getLevel();	// Scale audio down.
 		}
 	}
 
-    void releaseResources() override
+    void MainContentComponent::releaseResources() 
     {
 		filePlayer.releaseResources();
     }
 
-	void pushNextSampleIntoFifo(float sample) noexcept
+	void MainContentComponent::pushNextSampleIntoFifo(float sample) noexcept
 	{
-		// Once Fifo has enough data set to block state to ready.
+		// Once Fifo has enough data, set the block state to ready.
 		if (fifoIndex >= FFTSize)
 		{
 			if (nextFFTBlockReady == false)			 // If the block state was not ready
@@ -171,12 +160,55 @@ public:
 		fifo[fifoIndex++] = sample;	// Add current sample to the end of the fifo array.
 	}
 
-    //==============================================================================
-    void paint (Graphics& g) override
-    {
-    }
+	void MainContentComponent::convertBandsToLogScale()
+	{
+		logarithmicBandThreshold.clear();	// Clear array.
 
-    void resized() override
+		for (int BandNum = 0; BandNum < visualiser.getNumOfBandsToRender(); BandNum++)	// For each band to be drawn.
+		{	// Logarithmically convert the number of FFTbands to the number of bands which will be drawn.
+			logarithmicBandThreshold.add(1 * pow(((FFTSize * 0.5 - (FFTSize * 0.40))) / 1, BandNum / (visualiser.getNumOfBandsToRender() - 1.0)));
+		}
+	}
+
+	void MainContentComponent::calculateAudioIntensity(float amplitude)
+	{
+		float rotationDecay = 0.01;
+		amplitude *= rotationSpeedScale * 2;
+
+		if (amplitude <= 1.0 && amplitude >= 0.0)
+		{
+			if (amplitude < fileplayerAmplitude)
+			{
+				if (amplitude > fileplayerAmplitude - rotationDecay)
+				{
+					fileplayerAmplitude = amplitude;
+				}
+				else
+				{
+					fileplayerAmplitude -= rotationDecay;
+				}
+			}
+			else if (amplitude > fileplayerAmplitude)
+			{
+				if (amplitude < fileplayerAmplitude + rotationDecay)
+				{
+					fileplayerAmplitude = amplitude;
+				}
+				else
+				{
+					fileplayerAmplitude += rotationDecay;
+				}
+			}
+			else
+			{
+				fileplayerAmplitude = amplitude;
+			}
+		}
+	}
+
+    //==============================================================================
+
+    void MainContentComponent::resized() 
     {
 		if (getEditState() == true) { visualiser.setBounds(getBounds().reduced(50).removeFromLeft(getBounds().reduced(50).getWidth() * 0.75)); }
 		else { visualiser.setBounds(getBounds().reduced(50)); }
@@ -186,27 +218,28 @@ public:
 		float visualiserWidth = visualiser.getWidth();
 		float editPanelWidth = getBounds().getWidth() - visualiser.getBounds().getRight() - 10;
 
-		visualisationPresetBox.setBounds(       visualiserWidth + 60, filePlayer.getBounds().getHeight() + 20,    150,            25);
-		rotateToggle[rotateXToggleID].setBounds(visualiserWidth + 60, visualisationPresetBox.getBottom() + 20,    editPanelWidth, 30);
-		slider[rotationXSliderID].setBounds(    visualiserWidth + 60, rotateToggle[rotateXToggleID].getBottom(),  editPanelWidth, 30);
-		rotateToggle[rotateYToggleID].setBounds(visualiserWidth + 60, slider[rotationXSliderID].getBottom() + 20, editPanelWidth, 30);
-		slider[rotationYSliderID].setBounds(    visualiserWidth + 60, rotateToggle[rotateYToggleID].getBottom(),  editPanelWidth, 30);
+		visualisationPresetBox.setBounds(			visualiserWidth + 60, filePlayer.getBounds().getHeight() + 20,    150,            25);
+		rotateToggle[rotateAutoToggleID].setBounds(visualiserWidth + 60, visualisationPresetBox.getBottom() + 20, editPanelWidth, 30);
+		rotateToggle[rotateXToggleID].setBounds(    visualiserWidth + 60, rotateToggle[rotateAutoToggleID].getBottom() + 20,    editPanelWidth, 30);
+		slider[rotationXSliderID].setBounds(		visualiserWidth + 60, rotateToggle[rotateXToggleID].getBottom(),  editPanelWidth, 30);
+		rotateToggle[rotateYToggleID].setBounds(	visualiserWidth + 60, slider[rotationXSliderID].getBottom() + 20, editPanelWidth, 30);
+		slider[rotationYSliderID].setBounds(		visualiserWidth + 60, rotateToggle[rotateYToggleID].getBottom(),  editPanelWidth, 30);
 
-		labels[rotationSpeedLabelID].setBounds( visualiserWidth + 60, slider[rotationYSliderID].getBottom() + 20, editPanelWidth, 30);
-		slider[rotationSpeedSliderID].setBounds(visualiserWidth + 60, labels[rotationSpeedLabelID].getBottom(),   editPanelWidth, 30);
+		labels[rotationSpeedLabelID].setBounds(		visualiserWidth + 60, slider[rotationYSliderID].getBottom() + 20, editPanelWidth, 30);
+		slider[rotationSpeedSliderID].setBounds(	visualiserWidth + 60, labels[rotationSpeedLabelID].getBottom(),   editPanelWidth, 30);
 
-		labels[numOfBandsLabelID].setBounds(visualiserWidth + 60, slider[rotationSpeedSliderID].getBottom(), editPanelWidth, 30);
-		slider[numOfBandsSliderID].setBounds(visualiserWidth + 60, labels[numOfBandsLabelID].getBottom(), editPanelWidth - 5, 30);
+		labels[numOfBandsLabelID].setBounds(		visualiserWidth + 60, slider[rotationSpeedSliderID].getBottom(), editPanelWidth, 30);
+		slider[numOfBandsSliderID].setBounds(		visualiserWidth + 60, labels[numOfBandsLabelID].getBottom(), editPanelWidth - 5, 30);
 
-		labels[decaySpeedLabelID].setBounds(visualiserWidth + 60, slider[numOfBandsSliderID].getBottom(), editPanelWidth, 30);
-		slider[decaySpeedSliderID].setBounds(visualiserWidth + 60, labels[decaySpeedLabelID].getBottom(), editPanelWidth - 5, 30);
+		labels[decaySpeedLabelID].setBounds(		visualiserWidth + 60, slider[numOfBandsSliderID].getBottom(), editPanelWidth, 30);
+		slider[decaySpeedSliderID].setBounds(		visualiserWidth + 60, labels[decaySpeedLabelID].getBottom(), editPanelWidth - 5, 30);
 
-		visualisationColourSelector[0].setBounds(visualiserWidth + 60, slider[decaySpeedSliderID].getBottom() + 50, editPanelWidth * 0.5 - 10, 200);
-		visualisationColourSelector[1].setBounds(visualiserWidth + visualisationColourSelector[0].getWidth() + 70, slider[decaySpeedSliderID].getBottom() + 50, editPanelWidth * 0.5 - 10, 200);
+		visualisationColourSelector[0].setBounds(	visualiserWidth + 60, slider[decaySpeedSliderID].getBottom() + 10, editPanelWidth * 0.5 - 10, 200);
+		visualisationColourSelector[1].setBounds(	visualiserWidth + visualisationColourSelector[0].getWidth() + 70, slider[decaySpeedSliderID].getBottom() + 10, editPanelWidth * 0.5 - 10, 200);
 
     }
 
-	void buttonClicked(Button* button) override
+	void MainContentComponent::buttonClicked(Button* button) 
 	{
 		if (button == &editButton)		// If edit button was pressed.
 		{
@@ -216,6 +249,7 @@ public:
 				visualisationPresetBox.setVisible(false);
 				rotateToggle[rotateXToggleID].setVisible(false);
 				rotateToggle[rotateYToggleID].setVisible(false);
+				rotateToggle[rotateAutoToggleID].setVisible(false);
 				visualisationColourSelector[0].setVisible(false);
 				visualisationColourSelector[1].setVisible(false);
 
@@ -232,6 +266,7 @@ public:
 				visualisationPresetBox.setVisible(true);
 				rotateToggle[rotateXToggleID].setVisible(true);
 				rotateToggle[rotateYToggleID].setVisible(true);
+				rotateToggle[rotateAutoToggleID].setVisible(true);
 				visualisationColourSelector[0].setVisible(true);
 				visualisationColourSelector[1].setVisible(true);
 
@@ -252,9 +287,21 @@ public:
 		{												   // rotating state to the new state of the button
 			visualiser.setRotatingYState(rotateToggle[rotateYToggleID].getToggleState());
 		}
+		else if (button == &rotateToggle[rotateAutoToggleID])
+		{
+			if (rotateToggle[rotateAutoToggleID].getToggleState() == true)
+			{
+				labels[rotationSpeedLabelID].setText("Rotation Speed Scale", dontSendNotification);
+			}
+			else if (rotateToggle[rotateAutoToggleID].getToggleState() == false)
+			{
+				labels[rotationSpeedLabelID].setText("Rotation Speed", dontSendNotification);
+				visualiser.setRotationSpeed(slider[rotationSpeedSliderID].getValue());
+			}
+		}
 	}
 
-	void comboBoxChanged(ComboBox* comboBoxThatHasChanged) override
+	void MainContentComponent::comboBoxChanged(ComboBox* comboBoxThatHasChanged) 
 	{
 		if (comboBoxThatHasChanged == &visualisationPresetBox) // If the selected preset was changed
 		{	
@@ -269,7 +316,7 @@ public:
 		}
 	}
 
-	void sliderValueChanged(Slider* sliderchanged) override
+	void MainContentComponent::sliderValueChanged(Slider* sliderchanged) 
 	{
 		// Set relevent paramters to the corresponding sliders current value.
 		if (sliderchanged == &slider[rotationXSliderID])
@@ -284,7 +331,14 @@ public:
 		}
 		else if (sliderchanged == &slider[rotationSpeedSliderID])
 		{
-			visualiser.setRotationSpeed(slider[rotationSpeedSliderID].getValue());
+			if (rotateToggle[rotateAutoToggleID].getToggleState() == true)
+			{
+				rotationSpeedScale = slider[rotationSpeedSliderID].getValue();
+			}
+			else
+			{
+				visualiser.setRotationSpeed(slider[rotationSpeedSliderID].getValue());
+			}
 		}
 		else if (sliderchanged == &slider[numOfBandsSliderID])
 		{
@@ -297,7 +351,7 @@ public:
 		}
 	}
 
-	void changeListenerCallback(ChangeBroadcaster* source) override
+	void MainContentComponent::changeListenerCallback(ChangeBroadcaster* source) 
 	{
 		// Set the colour of a specified element of the render.
 		if (source == &visualisationColourSelector[0]) 
@@ -315,10 +369,15 @@ public:
 	}
 
 
-	void timerCallback() override
+	void MainContentComponent::timerCallback() 
 	{
 		if (filePlayer.getPlaybackState() == true)	// If audio is being played.
 		{
+			if (rotateToggle[rotateAutoToggleID].getToggleState() == true)
+			{
+				visualiser.setRotationSpeed(fileplayerAmplitude);
+			}
+
 			fastFourierTransform.performFrequencyOnlyForwardTransform(fftData);	// Convert fftdata array to spectral components.
 
 			int currentScaledBand = 0;	// Reset current band.
@@ -343,63 +402,15 @@ public:
 		}
 	}
 
-	void convertBandsToLogScale()
-	{
-		logarithmicBandThreshold.clear();	// Clear array.
-
-		for (int BandNum = 0; BandNum < visualiser.getNumOfBandsToRender(); BandNum++)	// For each band to be drawn.
-		{	// Logarithmically convert the number of FFTbands to the number of bands which will be drawn.
-			logarithmicBandThreshold.add(1 * pow(((FFTSize * 0.5 - (FFTSize * 0.40))) / 1, BandNum / (visualiser.getNumOfBandsToRender() - 1.0)));
-			DBG((String)logarithmicBandThreshold.getLast());
-		}
-	}
-
-
 	//==============================================================================
 
-	void setEditState(bool state)
+	void MainContentComponent::setEditState(bool state)
 	{
 		editState = state;
 	}
 
-	bool getEditState()
+	bool MainContentComponent::getEditState()
 	{
 		return editState;
 	}
 
-private:
-    //==============================================================================
-
-	AudioVisualiser visualiser;
-	FilePlayer filePlayer;
-
-	TextButton editButton;
-	bool editState = false;
-
-	ComboBox visualisationPresetBox;
-
-	enum {rotationXSliderID, rotationYSliderID, rotationSpeedSliderID, numOfBandsSliderID, decaySpeedSliderID, numOfSliders};
-	Slider slider[numOfSliders];
-
-	enum { rotationSpeedLabelID, numOfBandsLabelID, decaySpeedLabelID, numOfLabels};
-	Label labels[numOfLabels];
-	
-	enum{rotateXToggleID, rotateYToggleID, numOfToggleButtons};
-	ToggleButton rotateToggle[numOfToggleButtons];
-
-	ColourSelector visualisationColourSelector[2];
-
-	FFT fastFourierTransform;
-	enum { FFTOrder = 10, FFTSize = 1 << FFTOrder };
-	float fifo[FFTSize];
-	float fftData[FFTSize * 2];
-	int fifoIndex;
-	bool nextFFTBlockReady;
-	Array<int> logarithmicBandThreshold;
-	StatisticsAccumulator<float> StatAccumulator;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
-};
-
-// (This function is called by the app startup code to create our main component)
-Component* createMainContentComponent()     { return new MainContentComponent(); }

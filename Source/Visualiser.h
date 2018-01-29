@@ -5,20 +5,27 @@
 #include "Visualisations\Cube.h"
 #include "Visualisations\Droplet.h"
 
+
+/** Handles the OpenGL rendering of the project.
+Inherits from an OpenGLRender which supplies useful rendering
+functions. Has an OpenGL context which allows the OpenGL rendering
+to be attach to this classes component.
+Cube and Droplet handle the drawing code.
+*/
 class AudioVisualiser : public Component,
 						public OpenGLRenderer,
 						public Timer
 {
 public:
 
-/** Constructor, specify the number of band to draw*/
+/** Constructor, specify the number of band to draw.
+	Initialises OpenGL context and other variables.
+	@param bands: the number of bands to draw */
 	AudioVisualiser(int bands);
 
-/** Destructor */
+/** Destructor, stops the timer and stops OpenGL
+	from rendering. */
 	~AudioVisualiser();
-
-/** Standard JUCE paint function*/
-	void paint(Graphics& g) override;
 
 /** Called when an OpenGL Context is Created 
 	used to set standard OpenGL parameters such as
@@ -28,26 +35,30 @@ public:
 /** Main OpenGL rendering function*/
 	void renderOpenGL() override;
 
-/** *Called when the OpenGl Context is removed */
+/** Called when the OpenGl Context is removed */
 	void openGLContextClosing() override;
 
-/** Periodic callback on Message Thread 
+/** Periodic callback on message thread 
 	Mainly used to change non-crucial parameters
 	such as rotation.	*/
 	void timerCallback() override;
 
-/** Rotates The visualiser on a specified axis*/
+/** Rotates The visualiser on a specified axis.
+	@param axis: the axis to rotate on, (use enum {xAxis, yAxis, numOfAxis}) */
 	void rotateVisualiser(int axis);
 
 	/** Getters & Setters*/
 
-/** Sets the SpectrumData, provided by FFT spectral data*/
+/** Sets the SpectrumData, provided by FFT spectral data 
+	@param index: the band number to be set.
+	@param value: the data to set. */
 	void setSpectrumData(int index, float value);
 
 /** *Sets the size/bounds in which OpenGL will Render */
 	void setSize(int width, int height);
 
-/** Sets which visualisation should be drawn */
+/** Sets which visualisation should be drawn 
+	@param index: Use enum {spectralCubeID = 1, dropletID} */
 	void setVisualisationToDraw(int index);
 		
 /** Sets the horizontal minimum value that the visualiser will rotate to*/
@@ -56,10 +67,10 @@ public:
 /** Sets the horizontal maximum value that the visualiser will rotate to*/
 	void setHorizontalRotationMax(float value);
 
-/** Sets the verticle minimum value that the visualiser will rotate to*/
+/** Sets the vertical minimum value that the visualiser will rotate to*/
 	void setVerticleRotationMin(float value);
 
-/** Sets the verticle maximum value that the visualiser will rotate to*/
+/** Sets the vertical maximum value that the visualiser will rotate to*/
 	void setVerticleRotationMax(float value);
 
 /** Sets whether or not the visualiser should be rotating on the X axis*/
@@ -83,7 +94,8 @@ public:
 /** Sets how quickly each band will fall back down to 0*/
 	void setBandDecay(int value);
 
-/** Sets the render colour of a specified element of the visualiser*/
+/** Sets the render colour of a specified element of the visualiser.
+	@param index: Which visualisation element will change colour (0/1)  */
 	void setRenderColour(int index, float red, float green, float blue);
 		
 	enum { spectralCubeID = 1, dropletID };

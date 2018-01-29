@@ -2,6 +2,12 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+
+/** Simple file player class which handles all of
+the audio playback of the project, users load an audio file
+into this class which is streamed using a ResamplingAudioSource.
+Includes file selector, volume, track location and play, pause and stop buttons. 
+*/
 class FilePlayer : public AudioSource,
 	public Component,
 	public Button::Listener,
@@ -11,14 +17,13 @@ class FilePlayer : public AudioSource,
 {
 
 public:
-/** Constructor */
+/** Constructor, handles both audio and GUI initialisation. */
 	FilePlayer();
 
-/** Destructor */
+/** Destructor, stops the timer and audio thread and deletes/deallocates the
+	audioFormatReaderSource, resamplingAudioSource and audioTransportSource. */
 	~FilePlayer();
 	
-	/** GUI Functions*/
-
 /** Responds to button clicks such as the play button */
 	void buttonClicked(Button* button) override;
 
@@ -28,10 +33,8 @@ public:
 /** Responds to periodic calls, used to update the playback positon slider */
 	void timerCallback() override;
 
-/** Called when the component is resized. */
+/** Called when the component is resized and updates the bounds of all components */
 	void resized() override;
-
-	/** Audio Functions*/
 
 /** Initialises the resampling audio sources parameters.*/
 	void prepareToPlay(int samplesPerBlockExpected, double sampleRate)override;
@@ -42,13 +45,12 @@ public:
 /** Releases the resampling audio sources resources. */
 	void releaseResources()override;
 
-/** Loads and stores an audio file into an audio transport source.*/
+/** Loads and stores an audio file into an audio transport source.
+	@param file: The audio file to load. */
 	void loadAudioFile(File& file);
 
 /** Calls loadAudioFile when the filechooser chooses a new file.*/
 	void filenameComponentChanged(FilenameComponent* fileComponentThatHasChanged) override;
-
-	/** Getters & Setters */
 
 /** Sets the playback state. */
 	void setPlayBackState(bool state);
