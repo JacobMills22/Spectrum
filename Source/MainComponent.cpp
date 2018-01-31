@@ -74,7 +74,7 @@ visualiser(VisualiserBands)
         rotateToggle[toggleButtonID].setVisible(false);
     }
     
-    rotateToggle[rotateXToggleID].setButtonText("Rotate Veritcle");
+    rotateToggle[rotateXToggleID].setButtonText("Rotate Vertical");
     rotateToggle[rotateYToggleID].setButtonText("Rotate Horizontal");
     rotateToggle[rotateAutoToggleID].setButtonText("Auto Rotate");
     
